@@ -75,7 +75,7 @@ export default function WhatWeDo() {
   return (
     <div className="page">
       <div className="container">
-        <div className="section-header" style={{ marginTop: "3rem", marginBottom: "2rem" }}>
+        <div className="section-header">
           <h2 className="text-4xl font-bold border-b-2 border-[#d4a644] w-fit mx-auto pb-2 mb-2 max-md:text-xl">What We Teach</h2>
           <p className="section-subtitle">Comprehensive 6-Month NITA-Accredited Program</p>
         </div>

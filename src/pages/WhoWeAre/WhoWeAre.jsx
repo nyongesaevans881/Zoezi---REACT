@@ -21,7 +21,7 @@ export default function WhoWeAre() {
   return (
     <div className="page">
       <div className="container">
-        <div className="section-header" style={{ marginTop: "3rem" }}>
+        <div className="section-header">
           <h2 className="text-4xl font-bold border-b-2 border-[#d4a644] w-fit mx-auto pb-2 mb-2 max-md:text-xl">Who We Are</h2>
           <p className="section-subtitle">Our Story & Mission</p>
         </div>
