@@ -90,7 +90,7 @@ export default function Navbar() {
                     <Link to="/search-members" className="btn-search mobile-btn" onClick={() => setIsOpen(false)}>
                       Search Member
                     </Link>
-                    <Link to="#" className="btn-login mobile-btn" onClick={() => setIsOpen(false)}>
+                    <Link to="/login" className="btn-login mobile-btn" onClick={() => setIsOpen(false)}>
                       Member Login
                     </Link>
                   </div>
