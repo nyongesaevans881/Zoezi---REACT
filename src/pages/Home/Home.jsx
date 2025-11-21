@@ -147,8 +147,8 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.6 }}
               viewport={{ once: true }}
             >
-              <h3>KES 65,350</h3>
-              <p>Total Program Cost (Flexible Payments)</p>
+              <h3>Affordable</h3>
+              <p>Pricing With Flexible Payments</p>
             </motion.div>
           </div>
         </div>
