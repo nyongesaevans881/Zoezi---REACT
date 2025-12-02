@@ -9,11 +9,6 @@ export default function DashboardSidebar({ userData, onLogout, userType }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = searchParams.get('tab') || 'profile'
 
-   useEffect(() => {
-    console.log('DashboardSidebar userData updated:', userData);
-    console.log('User courses:', userData?.courses);
-  }, [userData]);
-
   const handleTabClick = (tab) => {
     setSearchParams({ tab })
     setIsMobileOpen(false)
@@ -22,7 +17,7 @@ export default function DashboardSidebar({ userData, onLogout, userType }) {
   // Define navigation based on user type
   const getNavItems = () => {
     const baseItems = [
-      { icon: FaUser, label: 'Dashboard', id: 'profile' },
+      { icon: FaUser, label: 'Dashboard', id: 'dashboard' },
       { icon: FaCog, label: 'Settings', id: 'settings' }
     ]
 

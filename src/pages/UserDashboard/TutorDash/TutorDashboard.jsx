@@ -8,6 +8,7 @@ import Curriculum from './components/Curriculum'
 import GroupCurriculum from './components/GroupCurriculum'
 import TutorCertification from './components/TutorCertification'
 import TutorSettlements from './components/TutorSettlements'
+import Dashboard from '../components/Dashboard'
 
 export default function TutorDashboard() {
   const [searchParams] = useSearchParams()
@@ -15,6 +16,8 @@ export default function TutorDashboard() {
 
   const renderTabContent = ({ userData, setUserData, handleLogout }) => {
     switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard userData={userData} setUserData={setUserData} userType="tutor" />
       case 'profile':
         return <ProfileTab userData={userData} setUserData={setUserData} userType="tutor" />
       case 'settings':

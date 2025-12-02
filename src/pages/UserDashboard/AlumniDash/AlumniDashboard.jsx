@@ -6,6 +6,7 @@ import SubscriptionTab from './components/SubscriptionTab'
 import MyCourses from '../components/MyCourses'
 import CPDHistoryTab from './components/CPDHistoryTab'
 import PlaceholderTabs from '../components/PlaceholderTabs'
+import Dashboard from '../components/Dashboard'
 
 export default function AlumniDashboard() {
   const [searchParams] = useSearchParams()
@@ -13,6 +14,8 @@ export default function AlumniDashboard() {
 
   const renderTabContent = ({ userData, setUserData, handleLogout }) => {
     switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard userData={userData} setUserData={setUserData} userType="alumni" />
       case 'profile':
         return <ProfileTab userData={userData} setUserData={setUserData} userType="alumni" />
       case 'settings':

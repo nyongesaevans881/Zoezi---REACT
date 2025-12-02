@@ -5,6 +5,7 @@ import SettingsTab from '../components/SettingsTab'
 import MyCourses from '../components/MyCourses'
 import StudentCourseView from './components/StudentCourseView'
 import StudentCertifications from './components/StudentCertifications'
+import Dashboard from '../components/Dashboard'
 
 export default function StudentDashboard() {
   const [searchParams] = useSearchParams()
@@ -18,6 +19,8 @@ export default function StudentDashboard() {
     }
 
     switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard userData={userData} setUserData={setUserData} userType="student" refreshUserData={refreshUserData}/>
       case 'profile':
         return <ProfileTab userData={userData} setUserData={setUserData} userType="student" refreshUserData={refreshUserData}/>
       case 'settings':

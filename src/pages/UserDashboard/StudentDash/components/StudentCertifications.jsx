@@ -90,11 +90,11 @@ const StudentCertifications = ({ userData }) => {
 
             .header {
               text-align: center;
-              margin-bottom: 10mm;
+              margin-bottom: 2mm;
             }
             .logo {
               font-size: 24pt;
-              margin-bottom: 5mm;
+              margin-bottom: 2mm;
             }
             .institute-name {
               font-size: 18pt;
@@ -106,7 +106,7 @@ const StudentCertifications = ({ userData }) => {
               font-size: 36pt;
               font-weight: bold;
               color: #d4a644;
-              margin: 15mm 0;
+              margin: 5mm 0;
               text-transform: uppercase;
               letter-spacing: 2px;
             }
@@ -114,7 +114,7 @@ const StudentCertifications = ({ userData }) => {
               font-size: 14pt;
               color: #666;
               font-style: italic;
-              margin-bottom: 10mm;
+              margin-bottom: 5mm;
             }
             .content {
               text-align: center;
@@ -126,7 +126,7 @@ const StudentCertifications = ({ userData }) => {
             .presented-text {
               font-size: 12pt;
               color: #333;
-              margin-bottom: 8mm;
+              margin-bottom: 4mm;
             }
             .student-name {
               font-size: 28pt;
@@ -134,6 +134,7 @@ const StudentCertifications = ({ userData }) => {
               color: #2b2520;
               margin: 8mm 0;
               text-decoration: underline;
+              text-transform: capitalize;
               text-decoration-color: #d4a644;
               text-underline-offset: 3mm;
             }
@@ -180,6 +181,7 @@ const StudentCertifications = ({ userData }) => {
               margin-top: 15mm;
               border-top: 1px solid #d4a644;
               padding-top: 8mm;
+              background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
             }
             .signature-line {
               display: inline-block;
@@ -190,12 +192,12 @@ const StudentCertifications = ({ userData }) => {
             }
             .signature-text {
               font-size: 10pt;
-              color: #666;
+              color: #000;
               margin-top: 2mm;
             }
             .certificate-code {
               font-size: 9pt;
-              color: #999;
+              color: #000;
               margin-top: 5mm;
               letter-spacing: 1px;
             }
@@ -248,17 +250,6 @@ const StudentCertifications = ({ userData }) => {
                       day: 'numeric' 
                     })}</div>
                   </div>
-                </div>
-              </div>
-
-              <div class="footer">
-                <div>
-                  <span class="signature-line"></span>
-                  <span class="signature-line"></span>
-                </div>
-                <div class="signature-text">Director of Academics &nbsp; &nbsp; Course Instructor</div>
-                <div class="certificate-code">
-                  CERT-${userData?._id?.slice(-8).toUpperCase()}-${course.courseId?.slice(-6).toUpperCase()}
                 </div>
               </div>
             </div>
@@ -348,7 +339,7 @@ const StudentCertifications = ({ userData }) => {
   }
 
   return (
-    <div className="p-4 md:p-6 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen space-y-6">
+    <div className="min-h-screen space-y-6">
       <div>
         <h1 className="font-bold text-3xl md:text-4xl text-primary-dark">📜 My Certifications</h1>
         <p className="text-gray-600 mt-2">Track your course progress, payment status, and download certificates</p>
