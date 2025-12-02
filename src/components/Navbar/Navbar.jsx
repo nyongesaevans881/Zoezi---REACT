@@ -58,7 +58,7 @@ export default function Navbar() {
               Search Member
             </Link>
             <Link to="/login" className="btn-login">
-              Alumni Login
+              Join / Login 
             </Link>
           </div>
 

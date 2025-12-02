@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
-import AdminLayout from "../../components/AdminLayout/AdminLayout"
+import AdminLayout from "../AdminLayout/AdminLayout"
 import toast from "react-hot-toast"
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL

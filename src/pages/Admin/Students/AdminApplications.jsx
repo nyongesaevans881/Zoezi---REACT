@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import AdminLayout from "../../components/AdminLayout/AdminLayout"
-import ApplicationDetailModal from "../../components/AdminLayout/ApplicationDetailModal"
-import AcceptModal from "../../components/AdminLayout/AcceptModal"
+import AdminLayout from "../AdminLayout/AdminLayout"
+import ApplicationDetailModal from "../components/ApplicationDetailModal"
+import AcceptModal from "../components/AcceptModal"
 import { TbScanEye } from "react-icons/tb";
 import "./AdminApplications.css"
 import { FaRegCheckCircle } from "react-icons/fa";

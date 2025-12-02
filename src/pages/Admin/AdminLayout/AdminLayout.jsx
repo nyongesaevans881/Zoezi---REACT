@@ -1,15 +1,16 @@
+import { FaBook, FaChalkboardTeacher, FaRegCreditCard, FaUserTie } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom"
+import { useAdminAuth } from "../../../hooks/useAdminAuth";
+import AdminAuthModal from "../components/AdminAuthModal";
 import { LuGraduationCap, LuUsers } from "react-icons/lu";
 import { IoDocumentAttachOutline } from "react-icons/io5";
+import { RiMoneyDollarBoxLine } from "react-icons/ri";
 import { MdOutlineDashboard } from "react-icons/md";
 import { FaRegPenToSquare } from "react-icons/fa6";
-import { FiSearch } from "react-icons/fi";
 import { MdAttachMoney } from "react-icons/md";
 import { useState, useEffect } from "react"
+import { FiSearch } from "react-icons/fi";
 import "./AdminLayout.css"
-import { FaRegCreditCard } from "react-icons/fa";
-import { useAdminAuth } from "../../hooks/useAdminAuth";
-import AdminAuthModal from "../../components/Admin/AdminAuthModal";
 
 export default function AdminLayout({ children }) {
   const navigate = useNavigate()
@@ -26,9 +27,13 @@ export default function AdminLayout({ children }) {
     { label: "Admissions", path: "/admin/admissions", icon: <FaRegPenToSquare /> },
     { label: "Update Fee", path: "/admin/update-fee", icon: <MdAttachMoney /> },
     { label: "Students", path: "/admin/students", icon: <LuUsers /> },
+    { label: "Tutors", path: "/admin/tutors", icon: <FaChalkboardTeacher /> },
+    { label: "Allotment", path: "/admin/assignments", icon: <FaUserTie /> },
+    { label: "Courses", path: "/admin/courses", icon: <FaBook /> },
     { label: "Details", path: "/admin/details", icon: <FiSearch /> },
     { label: "Alumni", path: "/admin/alumni", icon: <LuGraduationCap /> },
     { label: "Subscriptions", path: "/admin/subscriptions", icon: <FaRegCreditCard /> },
+    { label: "Settlements", path: "/admin/settlements", icon: <RiMoneyDollarBoxLine /> },
   ]
 
   const isActive = (path) => location.pathname === path
@@ -75,6 +80,15 @@ export default function AdminLayout({ children }) {
     setShowAuthModal(true);
   }
 
+  const scrollStyle = {
+    overflowY: 'scroll',
+    WebkitScrollbar: {
+      display: 'none',
+    },
+    msOverflowStyle: 'none',
+    scrollbarWidth: 'none',
+  };
+
   // Show loading while checking initial authentication
   if (!hasCheckedInitialAuth || isChecking) {
     return (
@@ -99,7 +113,7 @@ export default function AdminLayout({ children }) {
       {isAuthenticated && (
         <div className="admin-container">
           {/* Sidebar */}
-          <aside className={`admin-sidebar ${sidebarOpen ? "open" : "closed"}`}>
+          <aside style={scrollStyle} className={`admin-sidebar ${sidebarOpen ? "open" : "closed"}`}>
             <div className="sidebar-header">
               <h2 className="sidebar-title">NZI ADMIN</h2>
               <button 

@@ -123,7 +123,7 @@ export default function ProfileTab({ userData, isEditing, setIsEditing, editData
             <label className="block text-sm font-semibold mb-3" style={{ color: 'var(--color-primary-dark)' }}>Profile Picture</label>
             <div className="flex flex-col items-center gap-3 sm:gap-4">
               <img
-                src={editData.profilePicture || 'https://via.placeholder.com/200'}
+                src={editData.profilePicture.url || '/placeholder-profile.jpg'}
                 alt="Profile"
                 className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg object-cover border-2"
                 style={{ borderColor: 'var(--color-primary-gold)' }}
@@ -177,20 +177,6 @@ export default function ProfileTab({ userData, isEditing, setIsEditing, editData
                 value={editData.currentLocation || ''}
                 onChange={(e) => handleInputChange('currentLocation', e.target.value)}
                 placeholder="City, Country"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--color-primary-dark)' }}>Professional Bio</label>
-              <textarea
-                value={editData.bio || ''}
-                onChange={(e) => handleInputChange('bio', e.target.value)}
-                rows={4}
-                className="w-full px-3 sm:px-4 py-2 border rounded-lg outline-none resize-none focus:ring-2 transition text-sm sm:text-base"
-                style={{
-                  borderColor: 'var(--color-text-light)',
-                  focusRingColor: 'var(--color-primary-gold)'
-                }}
-                placeholder="Tell us about yourself..."
               />
             </div>
           </div>
@@ -278,20 +264,13 @@ export default function ProfileTab({ userData, isEditing, setIsEditing, editData
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h2 className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--color-primary-dark)' }}>📋 Profile Information</h2>
-        <button
-          onClick={handleEditStart}
-          className="flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition font-medium text-sm sm:text-base"
-          style={{ backgroundColor: 'var(--color-primary-gold)', color: 'var(--color-primary-dark)' }}
-        >
-          <FaEdit /> Edit Profile
-        </button>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Profile Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 pb-4 sm:pb-6 border-b" style={{ borderColor: 'var(--color-text-light)' }}>
           <img
-            src={userData.profilePicture || 'https://via.placeholder.com/120'}
+            src={userData.profilePicture.url || '/placeholder-profile.jpg'}
             alt="Profile"
             className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg object-cover border-3 max-md:mx-auto"
             style={{ borderColor: 'var(--color-primary-gold)' }}
@@ -316,12 +295,6 @@ export default function ProfileTab({ userData, isEditing, setIsEditing, editData
           <InfoItem label="Location" value={userData.currentLocation} />
           <InfoItem label="Admission #" value={userData.admissionNumber} />
           <InfoItem label="Course" value={userData.course} />
-        </div>
-
-        {/* Bio */}
-        <div className="pt-4 border-t" style={{ borderColor: 'var(--color-text-light)' }}>
-          <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-primary-dark)' }}>Professional Bio</h3>
-          <p style={{ color: 'var(--color-primary-brown)' }}>{userData.bio || 'No bio added yet'}</p>
         </div>
 
         {/* Emergency Contact */}

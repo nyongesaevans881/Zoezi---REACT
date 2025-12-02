@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaUsers, FaGraduationCap } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { StudentDetailModal } from '../../components/Admin/StudentDetailModal';
-import AdminLayout from '../../components/AdminLayout/AdminLayout';
+import { StudentDetailModal } from '../components/StudentDetailModal';
+import AdminLayout from '../AdminLayout/AdminLayout';
 import { LuScanEye } from 'react-icons/lu';
 import { GiGraduateCap } from 'react-icons/gi';
 import { PiStudentBold } from 'react-icons/pi';

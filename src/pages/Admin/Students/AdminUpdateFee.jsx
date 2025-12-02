@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FaUsers, FaMoneyBillWave, FaCheckCircle, FaClock } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { StudentDetailModal } from '../../components/Admin/StudentDetailModal';
-import { UpdateFeeModal } from '../../components/Admin/UpdateFeeModal';
-import AdminLayout from "../../components/AdminLayout/AdminLayout"
+import { StudentDetailModal } from '../components/StudentDetailModal';
+import { UpdateFeeModal } from '../components/UpdateFeeModal';
+import AdminLayout from "../AdminLayout/AdminLayout"
 
 const AdminUpdateFee = () => {
   const [students, setStudents] = useState([]);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '../../components/AdminLayout/AdminLayout';
+import AdminLayout from './AdminLayout/AdminLayout';
 import toast from 'react-hot-toast';
 import { FaUsers, FaFileAlt, FaGraduationCap, FaMoneyBillWave, FaUserTie } from 'react-icons/fa';
 import { IoStatsChartSharp } from 'react-icons/io5';

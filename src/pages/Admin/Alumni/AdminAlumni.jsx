@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { StudentDetailModal } from '../../components/Admin/StudentDetailModal';
-import AdminLayout from '../../components/AdminLayout/AdminLayout';
+import { StudentDetailModal } from '../components/StudentDetailModal';
+import AdminLayout from '../AdminLayout/AdminLayout';
 import { LuScanEye } from 'react-icons/lu';
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL;

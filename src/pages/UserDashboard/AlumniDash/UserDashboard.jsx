@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
-import DashboardSidebar from './components/DashboardSidebar'
-import ProfileTab from './components/ProfileTab'
-import SettingsTab from './components/SettingsTab'
+import DashboardSidebar from '../DashboardSidebar'
+import ProfileTab from '../components/ProfileTab'
+import SettingsTab from '../components/SettingsTab'
 import SubscriptionTab from './components/SubscriptionTab'
 import CPDHistoryTab from './components/CPDHistoryTab'
-import { PreviewTab } from './components/PlaceholderTabs'
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL
 
@@ -142,9 +141,6 @@ export default function UserDashboard() {
 
           {/* Settings Tab */}
           {activeTab === 'settings' && <SettingsTab userData={userData} />}
-
-          {/* Preview Tab */}
-          {activeTab === 'preview' && <PreviewTab />}
         </div>
       </main>
     </div>

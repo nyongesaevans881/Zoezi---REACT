@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaEdit, FaSave, FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
 import { CiSearch } from "react-icons/ci";
-import AdminLayout from '../../components/AdminLayout/AdminLayout';
+import AdminLayout from '../AdminLayout/AdminLayout';
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL;
 

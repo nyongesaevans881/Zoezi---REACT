@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import AdminLayout from '../../components/AdminLayout/AdminLayout';
+import AdminLayout from '../AdminLayout/AdminLayout';
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL;
 

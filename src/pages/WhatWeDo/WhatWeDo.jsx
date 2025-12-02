@@ -1,287 +1,278 @@
 "use client"
 import { motion } from "framer-motion"
-import "../../Pages.css"
+import { useState, useEffect } from "react"
+import { FaRegCheckCircle } from "react-icons/fa";
 
 export default function WhatWeDo() {
-  const semester1Topics = [
-    {
-      title: "Communication Skills",
-      topics: ["Verbal & Non-Verbal Communication", "Client Motivation & Goal Setting", "Conflict Resolution"],
-    },
-    {
-      title: "First Aid",
-      topics: ["RICE Therapy", "Wound Care & Fractures", "Injury Prevention", "Emergency Response"],
-    },
-    {
-      title: "Nutrition, Supplements & Ergogenics",
-      topics: ["Macronutrients & Micronutrients", "Balanced Diet Planning", "Performance Supplements"],
-    },
-    {
-      title: "Anatomy & Exercise Physiology",
-      topics: ["Skeletal & Muscular System", "Cardiorespiratory System", "VO2 Max & Oxygen Utilization"],
-    },
-    {
-      title: "Injuries & Their Management",
-      topics: ["Types of Injuries", "Common Sports Injuries", "Management Techniques"],
-    },
-    {
-      title: "Practical: Biomechanics & Weight Training",
-      topics: ["Movement Analysis", "Kinesiology", "Weight Training Principles", "Safety Protocols"],
-    },
-  ]
+  const [courses, setCourses] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const semester2Topics = [
-    {
-      title: "Prevention & Management of Injuries",
-      topics: ["Injury Prevention Strategies", "Rehabilitation Modalities", "Stretching & Strengthening"],
-    },
-    {
-      title: "Exercise for Special Populations",
-      topics: ["Exercise for the Elderly", "Pregnancy & Postpartum Fitness", "Chronic Disease Management"],
-    },
-    {
-      title: "Legal & Ethical Issues",
-      topics: ["Liability & Insurance", "Client Confidentiality", "Professional Conduct"],
-    },
-    {
-      title: "Business of Fitness & Gym Management",
-      topics: ["Gym Management", "Marketing & Client Retention", "Financial Management"],
-    },
-    {
-      title: "Practical: Group Classes & Fitness Testing",
-      topics: ["Group Fitness Instruction", "HIIT & Circuit Training", "Fitness Assessments"],
-    },
-  ]
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true)
+        const apiUrl = import.meta.env.VITE_SERVER_URL
+        const response = await fetch(`${apiUrl}/courses?limit=100&status=active`)
 
-  const practicalComponents = [
-    {
-      title: "Warming Up & Cooling Down",
-      description: "Learn proper techniques for injury prevention and recovery through dynamic and static stretching.",
-    },
-    {
-      title: "Training Methods",
-      description: "Master circuit training, plyometrics, resistance training, and flexibility training methodologies.",
-    },
-    {
-      title: "Prime Movers & Exercise Execution",
-      description: "Identify and train key muscle groups with proper form and technique in all exercises.",
-    },
-    {
-      title: "Daily Athlete Analysis & Record Keeping",
-      description: "Track client progress through accurate measurement and documentation of fitness improvements.",
-    },
-  ]
+        if (!response.ok) {
+          throw new Error(`Failed to fetch courses: ${response.status}`)
+        }
+
+        const data = await response.json()
+        setCourses(data.data.courses || [])
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching courses:', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [])
+
+
+  // Helper function to determine if course has an offer
+  const hasActiveOffer = (course) => {
+    return course.offerPrice &&
+      course.courseFee &&
+      course.offerPrice < course.courseFee;
+  };
+
+  // Calculate discount percentage
+  const calculateDiscountPercentage = (course) => {
+    if (!hasActiveOffer(course)) return 0;
+
+    const discount = ((course.courseFee - course.offerPrice) / course.courseFee) * 100;
+    return Math.round(discount);
+  };
 
   return (
-    <div className="page">
-      <div className="container">
-        <div className="section-header">
-          <h2 className="text-4xl font-bold border-b-2 border-[#d4a644] w-fit mx-auto pb-2 mb-2 max-md:text-xl">What We Teach</h2>
-          <p className="section-subtitle">Comprehensive 6-Month NITA-Accredited Program</p>
-        </div>
-
-        {/* Semester 1 */}
+    <div className="min-h-screen bg-primary py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Page Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          style={{ marginBottom: "3rem" }}
+          className="text-center mb-12"
         >
-          <h2 style={{ color: "#2b2520", marginBottom: "1.5rem", fontSize: "1.6rem" }}>
-            Semester 1: Foundation & Initial Practice (2 Months)
-          </h2>
-          <div className="content-grid">
-            {semester1Topics.map((topic, idx) => (
+          <h1 className="text-4xl md:text-5xl font-bold text-primary-dark mb-4">Our Courses</h1>
+          <div className="w-24 h-1 bg-brand-gold mx-auto mb-4"></div>
+          <p className="text-lg text-secondary max-w-2xl mx-auto">Explore our comprehensive and dynamic course offerings</p>
+        </motion.div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-gold"></div>
+              <p className="text-secondary mt-4">Loading courses...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-8 text-center"
+          >
+            <p className="text-red-700 font-semibold">Error loading courses</p>
+            <p className="text-red-600 text-sm mt-2">{error}</p>
+          </motion.div>
+        )}
+
+        {/* Courses Grid */}
+        {!loading && !error && courses.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {courses.map((course, idx) => (
               <motion.div
-                key={idx}
-                className="content-box"
+                key={course.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                style={{
-                  borderLeft: "4px solid #d4a644",
-                  background: "#faf9f7",
-                }}
+                className="bg-white rounded-lg border-2 border-gray-300 hover:border-brand-gold shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
               >
-                <h3 style={{ color: "#2b2520", marginBottom: "1rem" }}>{topic.title}</h3>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                  {topic.topics.map((t, i) => (
-                    <li
-                      key={i}
-                      style={{ marginBottom: "0.5rem", color: "#555", paddingLeft: "1.5rem", position: "relative" }}
-                    >
+                {/* Course Image */}
+                {course.coverImage?.url && (
+                  <div className="relative h-58 overflow-hidden bg-gray">
+                    <img
+                      src={course.coverImage.url}
+                      alt={course.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+
+                    {/* Diagonal Ribbon */}
+                    <div className="absolute top-10 -left-5 w-24">
+                      <div className={`absolute transform -translate-x-6 -translate-y-6 -rotate-45 w-32 h-4 flex items-center justify-center ${course.courseType === "online"
+                        ? "bg-green-500"
+                        : "bg-blue-500"
+                        }`}>
+                        <span className="text-white text-[10px] font-semibold flex items-center gap-1">
+                          <FaRegCheckCircle />
+                          ONLINE
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Physical ribbon for native courses */}
+                    {course.courseType !== "online" && (
+                      <div className="absolute top-12 left-0 w-24">
+                        <div className="absolute transform -translate-x-6 -translate-y-6 -rotate-45 w-32 h-4 flex items-center justify-center bg-primary-brown">
+                          <span className="text-white text-[10px] font-bold flex items-center gap-1">
+                            <FaRegCheckCircle />
+                            PHYSICAL
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {course.courseType == "online" && (
                       <span
-                        style={{
-                          position: "absolute",
-                          left: 0,
-                          width: "6px",
-                          height: "6px",
-                          background: "#e8c547",
-                          borderRadius: "50%",
-                          top: "0.6rem",
-                        }}
-                      ></span>
-                      {t}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                        className="absolute bottom-0 left-0 px-3 py-1 bg-blue-400 text-white text-xs font-semibold"
+                      >
+                        <p className="capitalize font-bold">{course.courseTier}</p>
+                      </span>
+                    )}
+                  </div>
+                )}
 
-        {/* Semester 2 */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          style={{ marginBottom: "3rem" }}
-        >
-          <h2 style={{ color: "#2b2520", marginBottom: "1.5rem", fontSize: "1.6rem" }}>
-            Semester 2: Advanced Concepts & Practice (2 Months)
-          </h2>
-          <div className="content-grid">
-            {semester2Topics.map((topic, idx) => (
-              <motion.div
-                key={idx}
-                className="content-box"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                style={{
-                  borderLeft: "4px solid #d4a644",
-                  background: "#faf9f7",
-                }}
-              >
-                <h3 style={{ color: "#2b2520", marginBottom: "1rem" }}>{topic.title}</h3>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                  {topic.topics.map((t, i) => (
-                    <li
-                      key={i}
-                      style={{ marginBottom: "0.5rem", color: "#555", paddingLeft: "1.5rem", position: "relative" }}
+                {/* Course Content */}
+                <div className="p-6">
+
+                  {/* Course Name */}
+                  <h3 className="text-xl font-bold text-primary-dark mb-2 line-clamp-2">
+                    {course.name}
+                  </h3>
+
+                  {/* Course Description */}
+                  <p className="text-secondary text-sm mb-4 line-clamp-3">
+                    {course.description}
+                  </p>
+
+                  {/* Duration */}
+                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
+                    <span className="text-primary-dark font-semibold">Course Duration:</span>
+                    <span className="text-secondary ml-2">{course.duration}&nbsp;{course.durationType}</span>
+                  </div>
+
+                  {/* Pricing */}
+                  <div className="mb-6">
+                    {/* In the pricing section */}
+                    {hasActiveOffer(course) ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-2xl font-bold text-brand-gold">
+                          KES {course.offerPrice?.toLocaleString()}
+                        </span>
+                        <span className="text-md line-through font-bold text-gray-400">
+                          KES {course.courseFee?.toLocaleString()}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-2xl font-bold text-primary-dark">
+                        KES {course.courseFee?.toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Enroll Button */}
+                  {course.courseType == "online" ? (
+                    <a
+                      href="/login"
+                      className="bg-brand-gold text-white py-3 px-8 rounded-lg font-semibold hover:bg-brand-gold/90 transition-all duration-200 w-full block text-center"
                     >
-                      <span
-                        style={{
-                          position: "absolute",
-                          left: 0,
-                          width: "6px",
-                          height: "6px",
-                          background: "#e8c547",
-                          borderRadius: "50%",
-                          top: "0.6rem",
-                        }}
-                      ></span>
-                      {t}
-                    </li>
-                  ))}
-                </ul>
+                      Enroll Now
+                    </a>
+                  ) : (
+                    <a
+                      href="/apply-now"
+                      className="bg-brand-gold text-white py-3 px-8 rounded-lg font-semibold hover:bg-brand-gold/90 transition-all duration-200 w-full block text-center"
+                    >
+                      Enroll Now
+                    </a>
+                  )}
+                </div>
               </motion.div>
             ))}
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
-        {/* Semester 3 */}
+        {/* Empty State */}
+        {!loading && !error && courses.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20"
+          >
+            <p className="text-2xl font-bold text-primary-dark mb-2">No Courses Available</p>
+            <p className="text-secondary">Check back soon for new course offerings</p>
+          </motion.div>
+        )}
+
+        {/* Why Choose Us Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          style={{
-            background: "linear-gradient(135deg, #e8c547 0%, #d4a644 100%)",
-            padding: "2rem",
-            borderRadius: "12px",
-            marginBottom: "3rem",
-            color: "#2b2520",
-          }}
+          className="mt-20 bg-primary-brown rounded-lg p-8 md:p-12 text-white"
         >
-          <h2 style={{ color: "#2b2520", marginBottom: "1rem" }}>Semester 3: Real-World Experience (1 Month)</h2>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            <li style={{ marginBottom: "0.75rem" }}>
-              <strong>Attachment:</strong> Real-world industry placement in certified gyms and fitness centers
-            </li>
-            <li>
-              <strong>Outdoor Activities:</strong> Aqua aerobics, hiking, and team-building exercises
-            </li>
-          </ul>
-        </motion.div>
-
-        {/* Practical Components */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          style={{ marginBottom: "3rem" }}
-        >
-          <h2 style={{ color: "#2b2520", marginBottom: "1.5rem", fontSize: "1.6rem" }}>Practical Components</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
-            {practicalComponents.map((component, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                style={{
-                  background: "#fff",
-                  padding: "1.5rem",
-                  borderRadius: "8px",
-                  border: "2px solid #f0e6d2",
-                  transition: "all 0.3s ease",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#d4a644"
-                  e.currentTarget.style.boxShadow = "0 8px 16px rgba(212, 166, 68, 0.2)"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "#f0e6d2"
-                  e.currentTarget.style.boxShadow = "none"
-                }}
-              >
-                <h3 style={{ color: "#d4a644", marginBottom: "0.75rem" }}>{component.title}</h3>
-                <p style={{ color: "#555", margin: 0, lineHeight: "1.6" }}>{component.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Key Features */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          style={{
-            background: "linear-gradient(135deg, #2b2520 0%, #3d3531 100%)",
-            color: "#fff",
-            padding: "2rem",
-            borderRadius: "12px",
-            marginBottom: "2rem",
-          }}
-        >
-          <h2 style={{ marginBottom: "1.5rem" }}>Why Choose Nairobi Zoezi Institute?</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1.5rem" }}>
-            <div>
-              <h4 style={{ color: "#d4a644", marginBottom: "0.5rem" }}>NITA Accredited</h4>
-              <p>Fully accredited by National Industrial Training Authority (NITA/TRN/1553)</p>
-            </div>
-            <div>
-              <h4 style={{ color: "#d4a644", marginBottom: "0.5rem" }}>Industry Partnerships</h4>
-              <p>Guaranteed placements through partnerships with leading gyms and fitness centers</p>
-            </div>
-            <div>
-              <h4 style={{ color: "#d4a644", marginBottom: "0.5rem" }}>Flexible Learning</h4>
-              <p>Physical, online, and weekend classes to fit your schedule</p>
-            </div>
-            <div>
-              <h4 style={{ color: "#d4a644", marginBottom: "0.5rem" }}>Competency-Based</h4>
-              <p>Hands-on learning with measurable skill acquisition aligned with industry benchmarks</p>
-            </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center">Why Choose Our Courses?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-3xl font-bold text-brand-gold mb-2">NITA</div>
+              <h4 className="text-lg font-semibold mb-2">Accredited</h4>
+              <p className="text-off-white text-sm">Fully accredited by National Industrial Training Authority</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-3xl font-bold text-brand-gold mb-2">100%</div>
+              <h4 className="text-lg font-semibold mb-2">Industry Focused</h4>
+              <p className="text-off-white text-sm">Guaranteed placements through industry partnerships</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-3xl font-bold text-brand-gold mb-2">Flexible</div>
+              <h4 className="text-lg font-semibold mb-2">Learning</h4>
+              <p className="text-off-white text-sm">Physical, online, and weekend classes available</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="text-3xl font-bold text-brand-gold mb-2">Practical</div>
+              <h4 className="text-lg font-semibold mb-2">Focused</h4>
+              <p className="text-off-white text-sm">Hands-on learning with real-world applications</p>
+            </motion.div>
           </div>
         </motion.div>
       </div>

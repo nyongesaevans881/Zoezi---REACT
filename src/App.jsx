@@ -20,17 +20,25 @@ import Login from "./pages/Login/Login"
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword"
 
 // Admin Pages
-import AdminDashboard from "./pages/Admin/AdminDashboard"
-import AdminApplications from "./pages/Admin/AdminApplications"
-import AdminAdmissions from "./pages/Admin/AdminAdmissions"
-import AdminUpdateFee from "./pages/Admin/AdminUpdateFee"
-import AdminStudents from "./pages/Admin/AdminStudents"
-import AdminAlumni from "./pages/Admin/AdminAlumni"
-import AdminDetails from "./pages/Admin/AdminDetails"
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminSubscriptions from "./pages/Admin/Finance/AdminSubscriptions";
+import AdminTutors from "./pages/Admin/Tutors/AdminTutors";
+import AdminAssignments from "./pages/Admin/Assignments/AdminAssignments";
+import AdminApplications from "./pages/Admin/Students/AdminApplications";
+import AdminAdmissions from "./pages/Admin/Students/AdminAdmissions";
+import AdminUpdateFee from "./pages/Admin/Students/AdminUpdateFee";
+import AdminStudents from "./pages/Admin/Students/AdminStudents";
+import AdminAlumni from "./pages/Admin/Alumni/AdminAlumni";
+import AdminDetails from "./pages/Admin/Students/AdminDetails";
 
 // User Pages
-import UserDashboard from "./pages/UserDashboard/UserDashboard"
-import AdminSubscriptions from "./pages/Admin/AdminSubscriptions";
+import UserDashboard from "./pages/UserDashboard/AlumniDash/UserDashboard"
+import StudentDashboard from "./pages/UserDashboard/StudentDash/StudentDashboard"
+import TutorDashboard from "./pages/UserDashboard/TutorDash/TutorDashboard"
+import AlumniDashboard from "./pages/UserDashboard/AlumniDash/AlumniDashboard"
+import AdminCourses from "./pages/Admin/courses/AdminCourses";
+import AdminFinance from "./pages/Admin/Finance/AdminFinance";
+
 
 function App() {
   return (
@@ -77,11 +85,63 @@ function App() {
         <Route path="/admin/admissions" element={<AdminAdmissions />} />
         <Route path="/admin/update-fee" element={<AdminUpdateFee />} />
         <Route path="/admin/students" element={<AdminStudents />} />
+        <Route path="/admin/tutors" element={<AdminTutors />} />
+        <Route path="/admin/assignments" element={<AdminAssignments />} />
+        <Route path="/admin/courses" element={<AdminCourses />} />
         <Route path="/admin/alumni" element={<AdminAlumni />} />
         <Route path="/admin/details" element={<AdminDetails />} />
         <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
+        <Route path="/admin/settlements" element={<AdminFinance />} />
 
-        {/* User Routes */}
+        {/* User Dashboards - Type-Specific Routes */}
+        <Route
+          path="/student/dashboard"
+          element={
+            <ProtectedRoute>
+              <StudentDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student"
+          element={
+            <ProtectedRoute>
+              <StudentDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tutor/dashboard"
+          element={
+            <ProtectedRoute>
+              <TutorDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tutor"
+          element={
+            <ProtectedRoute>
+              <TutorDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/alumni/dashboard"
+          element={
+            <ProtectedRoute>
+              <AlumniDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/alumni"
+          element={
+            <ProtectedRoute>
+              <AlumniDashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   )
