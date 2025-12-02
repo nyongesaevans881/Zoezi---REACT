@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { FaClock, FaBook } from 'react-icons/fa'
 import MpesaPayment from '../../../components/MpesaPayment'
+import toast from 'react-hot-toast'
 
 const API_BASE = import.meta.env.VITE_SERVER_URL
 
-export default function MyCourses({ userData, setUserData }) {
+export default function MyCourses({ userData, setUserData, refreshUserData }) {
   const [available, setAvailable] = useState([])
   const [enrolled, setEnrolled] = useState(() => userData?.courses || [])
   const [loading, setLoading] = useState(false)
@@ -12,9 +13,19 @@ export default function MyCourses({ userData, setUserData }) {
   const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
-    fetchAvailableCourses()
-    fetchEnrolledCourses()
-  }, [])
+    const loadInitialData = async () => {
+      try {
+        // First fetch enrolled courses
+        await fetchEnrolledCourses();
+        // Then fetch available courses
+        await fetchAvailableCourses();
+      } catch (error) {
+        console.error('Failed to load initial data:', error);
+      }
+    };
+
+    loadInitialData();
+  }, [userData?._id]);
 
   const fetchEnrolledCourses = async () => {
     if (!userData?._id) return
@@ -22,6 +33,7 @@ export default function MyCourses({ userData, setUserData }) {
       const res = await fetch(`${API_BASE}/users/${userData._id}/courses`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
+
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || 'Failed to fetch enrolled courses')
       setEnrolled(data.data || [])
@@ -30,47 +42,58 @@ export default function MyCourses({ userData, setUserData }) {
     }
   }
 
-  useEffect(() => {
-    setEnrolled(userData?.courses || [])
-  }, [userData])
 
+  // In MyCourses.js, update the fetchAvailableCourses function:
   const fetchAvailableCourses = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/courses?courseType=online&limit=100&status=active`)
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Failed to fetch courses')
+      const res = await fetch(`${API_BASE}/courses?courseType=online&limit=100&status=active`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to fetch courses');
 
-      const courses = data.data?.courses || data.data || []
-      console.log('Fetched courses:', courses)
+      const courses = data.data?.courses || data.data || [];
+
+      // Get fresh enrolled data from the server
+      const enrolledRes = await fetch(`${API_BASE}/users/${userData._id}/courses`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const enrolledData = await enrolledRes.json();
+      const currentEnrolled = enrolledData.data || enrolled;
+
+      // Use the fresh enrolled data for filtering
       const enrolledIds = new Set(
-        (userData?.courses || [])
+        currentEnrolled
           .filter(Boolean)
-          .map(c => String(c?.courseId || c?._id))
-      )
-      const filtered = courses.filter(c => !enrolledIds.has(String(c._id)))
-      console.log('Available courses after filtering:', filtered)
-      setAvailable(filtered)
+          .map(c => {
+            const id = c.courseId?._id || c._id || c.courseId;
+            return id ? String(id) : null;
+          })
+          .filter(id => id && id !== 'undefined' && id !== 'null')
+      );
+
+
+      // Filter out courses that user is already enrolled in
+      const filtered = courses.filter(c => !enrolledIds.has(String(c._id)));
+
+      setAvailable(filtered);
     } catch (err) {
-      console.error('Failed to load courses', err)
+      console.error('Failed to load courses:', err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
 
   const openEnroll = (course) => {
     setSelectedCourse(course)
     setShowModal(true)
   }
 
-  const handleEnrollSuccess = (enrollRecord) => {
-    const updated = [...(enrolled || []), enrollRecord]
-    setEnrolled(updated)
-    const stored = JSON.parse(localStorage.getItem('user') || '{}')
-    stored.courses = updated
-    localStorage.setItem('user', JSON.stringify(stored))
-    if (setUserData) setUserData(stored)
-    setAvailable(prev => prev.filter(c => String(c._id) !== String(enrollRecord.courseId)))
+  const handleEnrollSuccess = () => {
+    // Instead of manually updating, just refresh both lists
+    fetchEnrolledCourses();
+    fetchAvailableCourses();
   }
 
   const handlePaymentSuccess = async (paymentData) => {
@@ -86,23 +109,37 @@ export default function MyCourses({ userData, setUserData }) {
           courseId: selectedCourse._id,
           paymentData: paymentData,
         }),
-      })
+      });
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Enrollment failed')
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Enrollment failed');
 
-      // Refresh enrolled courses from server instead of local-only update
-      await fetchEnrolledCourses()
-      // refresh available list too
-      await fetchAvailableCourses()
-      setShowModal(false)
-      setSelectedCourse(null)
+      // Refresh user data FIRST - this updates the sidebar
+      if (refreshUserData) {
+        const updatedUser = await refreshUserData();
+
+        if (updatedUser?.courses) {
+          // Update the enrolled state with refreshed courses
+          setEnrolled(updatedUser.courses);
+
+          // Now fetch fresh available courses with the updated enrolled state
+          await fetchAvailableCourses();
+        }
+      } else {
+        // Fallback: refresh both lists
+        await fetchEnrolledCourses();
+        await fetchAvailableCourses();
+      }
+
+      setShowModal(false);
+      setSelectedCourse(null);
+      toast.success('Enrolled successfully!');
+
     } catch (err) {
-      console.error('Enrollment error:', err)
-      alert('Enrollment failed: ' + err.message)
+      console.error('Enrollment error:', err);
+      toast.error('Enrollment failed: ' + err.message);
     }
-  }
-
+  };
   return (
     <div className="space-y-8">
       {/* Enrolled Courses Section */}
@@ -112,38 +149,110 @@ export default function MyCourses({ userData, setUserData }) {
         </h3>
         {enrolled && enrolled.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {enrolled.filter(Boolean).map((c) => (
-              <div
-                key={c?.courseId || c?._id}
-                className="border-2 border-brand-gold rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 bg-white"
-              >
-                <div className="h-40 bg-gradient-to-br from-brand-gold to-brand-yellow flex items-center justify-center">
-                  <FaBook className="text-white text-4xl" />
-                </div>
-                <div className="p-4">
-                  <h5 className="font-bold text-lg text-brand-dark mb-2 line-clamp-2">{c?.name || 'Untitled Course'}</h5>
-                  <div className="flex items-center gap-2 text-sm text-secondary mb-2">
-                    <FaClock className="text-brand-gold" />
-                    <span>{c?.duration || '-'} {c?.durationType || ''}</span>
+            {enrolled.filter(Boolean).map((c) => {
+              // Extract course info properly
+              const courseData = c.courseId || c;
+              const paymentData = c.payment || {};
+              const tutorData = c.tutor;
+
+              return (
+                <div
+                  key={c._id}
+                  className="border-2 border-brand-gold rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 bg-white"
+                >
+                  {/* Course Image */}
+                  <div className="h-40 bg-gray-200 relative overflow-hidden">
+                    {courseData.coverImage?.url ? (
+                      <img
+                        src={courseData.coverImage.url}
+                        alt={courseData.name || 'Course'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-brand-gold to-brand-yellow flex items-center justify-center">
+                        <FaBook className="text-white text-4xl" />
+                      </div>
+                    )}
                   </div>
-                  <div className="mb-3 pt-2 border-t border-gray-200">
-                    <p className="text-xs text-secondary">Payment Status</p>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mt-1 ${
-                        (c?.payment?.status || c?.paymentStatus || 'PENDING') === 'PAID'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {c?.payment?.status || c?.paymentStatus || 'PENDING'}
-                    </span>
+
+                  <div className="p-4">
+                    <h5 className="font-bold text-lg text-brand-dark mb-2 line-clamp-2">
+                      {courseData.name || c.name || 'Untitled Course'}
+                    </h5>
+
+                    <div className="flex items-center gap-2 text-sm text-secondary mb-2">
+                      <FaClock className="text-brand-gold" />
+                      <span>{courseData.duration || c.duration || '-'} {courseData.durationType || c.durationType || ''}</span>
+                    </div>
+
+                    {/* Payment Information */}
+                    <div className="mb-3 pt-2 border-t border-gray-200">
+                      <p className="text-xs text-secondary font-semibold mb-1">Payment Details</p>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Amount:</span>
+                          <span className="font-semibold">KES {paymentData.amount?.toLocaleString() || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Phone:</span>
+                          <span>{paymentData.phone || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Transaction ID:</span>
+                          <span className="font-mono">{paymentData.transactionId || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Status:</span>
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${paymentData.status === 'PAID'
+                            ? 'bg-green-100 text-green-800'
+                            : paymentData.status === 'FAILED'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                            {paymentData.status || 'PENDING'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tutor Assignment */}
+                    <div className="mb-3 pt-2 border-t border-gray-200">
+                      <p className="text-xs text-secondary font-semibold mb-1">Tutor Assignment</p>
+                      {tutorData?.status === 'ASSIGNED' && tutorData?.name ? (
+                        <div className="space-y-1 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Name:</span>
+                            <span className="font-semibold">{tutorData.name}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Email:</span>
+                            <span>{tutorData.email}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Phone:</span>
+                            <span>{tutorData.phone}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Status:</span>
+                            <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                              ASSIGNED
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-yellow-600 text-xs">⏳ Pending Assignment</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-light">
+                      Enrolled: {new Date(c.enrolledAt || Date.now()).toLocaleDateString()}
+                    </p>
                   </div>
-                  <p className="text-xs text-light">
-                    Enrolled: {new Date(c?.enrolledAt || c?.timeOfEnrollment || Date.now()).toLocaleDateString()}
-                  </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="bg-white border-2 border-gray-200 rounded-xl p-8 text-center">

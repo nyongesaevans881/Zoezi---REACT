@@ -17,7 +17,7 @@ export default function Navbar() {
   const menuItems = [
     { label: "Home", path: "/" },
     { label: "Who We Are", path: "/who-we-are" },
-    { label: "What We Do", path: "/what-we-do" },
+    { label: "Our Courses", path: "/what-we-do" },
     { label: "Apply Now", path: "/apply-now" },
     { label: "Contact", path: "/contact" },
   ]

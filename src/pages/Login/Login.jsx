@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
+import { useAuth } from '../../hooks/useAuth';
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL
 
@@ -16,6 +17,9 @@ export default function Login() {
   const navigate = useNavigate()
   const [userType, setUserType] = useState('student')
   const [showRegister, setShowRegister] = useState(false)
+
+  const { login } = useAuth();
+  
   // Login form
   const [loginId, setLoginId] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -31,37 +35,37 @@ export default function Login() {
   const [regLoading, setRegLoading] = useState(false)
 
   // Login handler
-  const handleLogin = async (e) => {
-    e.preventDefault()
-    if (!loginId.trim() || !loginPassword.trim()) {
-      toast.error('Please enter all fields')
-      return
-    }
-    setLoginLoading(true)
-    try {
-      // All user types login with email
-      const endpoint = '/auth/login'
-      const body = { userType, email: loginId, password: loginPassword }
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.message || 'Login failed')
-      localStorage.setItem('user', JSON.stringify(data.data.user))
-      localStorage.setItem('token', data.data.token)
-      localStorage.setItem('userType', data.data.user.userType || userType)
-      toast.success('Login successful!')
-      if (data.data.user.userType === 'student') navigate('/student/dashboard')
-      else if (data.data.user.userType === 'tutor') navigate('/tutor/dashboard')
-      else if (data.data.user.userType === 'alumni') navigate('/alumni/dashboard')
-    } catch (err) {
-      toast.error(err.message || 'Login failed')
-    } finally {
-      setLoginLoading(false)
-    }
+const handleLogin = async (e) => {
+  e.preventDefault();
+  if (!loginId.trim() || !loginPassword.trim()) {
+    toast.error('Please enter all fields');
+    return;
   }
+  setLoginLoading(true);
+  try {
+    const endpoint = '/auth/login';
+    const body = { userType, email: loginId, password: loginPassword };
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Login failed');
+    
+    // Use the new login function
+    login(data.data.user, data.data.token, data.data.user.userType || userType);
+    
+    toast.success('Login successful!');
+    if (data.data.user.userType === 'student') navigate('/student/dashboard');
+    else if (data.data.user.userType === 'tutor') navigate('/tutor/dashboard');
+    else if (data.data.user.userType === 'alumni') navigate('/alumni/dashboard');
+  } catch (err) {
+    toast.error(err.message || 'Login failed');
+  } finally {
+    setLoginLoading(false);
+  }
+};
 
   // Register handler
   const handleRegister = async (e) => {

@@ -211,18 +211,21 @@ const StudentCourseView = ({ userData, courseId }) => {
 
   if (!group) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <p className="text-red-700">Unable to load course curriculum. Please contact your tutor.</p>
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+        <h2 className='text-2xl font-bold text-gray-400 mb-4'>
+          Pending Assignment
+        </h2>
+        <p className='text-lg text-gray-600 mb-4'>You have not been assigned to a cohort by your tutor yet</p>
       </div>
     )
   }
 
   const progress = calculateProgress()
   const course = userData.courses.find(c => String(c.courseId) === String(courseId))
-  const showPaymentWidget = 
-    courseEnroll && 
-    !courseEnroll.paymentNotificationHidden && 
-    courseEnroll.payment && 
+  const showPaymentWidget =
+    courseEnroll &&
+    !courseEnroll.paymentNotificationHidden &&
+    courseEnroll.payment &&
     courseEnroll.payment.status
 
   return (
@@ -298,7 +301,7 @@ const StudentCourseView = ({ userData, courseId }) => {
       {/* Curriculum Items */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h4 className="font-semibold text-primary-dark mb-4 text-lg">Course Materials</h4>
-        
+
         {(!group.curriculumItems || group.curriculumItems.length === 0) ? (
           <div className="text-center py-12">
             <p className="text-gray-500">No curriculum items yet</p>
@@ -310,9 +313,8 @@ const StudentCourseView = ({ userData, courseId }) => {
               const isExpanded = expandedItemId === item._id
 
               return (
-                <div key={item._id} className={`border rounded-lg overflow-hidden transition-all ${
-                  released ? 'border-gray-300 cursor-pointer hover:shadow-md' : 'border-gray-200 opacity-60'
-                }`}>
+                <div key={item._id} className={`border rounded-lg overflow-hidden transition-all ${released ? 'border-gray-300 cursor-pointer hover:shadow-md' : 'border-gray-200 opacity-60'
+                  }`}>
                   {/* Item Header */}
                   <div
                     onClick={() => {
@@ -405,8 +407,8 @@ const StudentCourseView = ({ userData, courseId }) => {
                           <div className="space-y-4">
                             {item.responses.map((response, ridx) => {
                               // Show if public or if student owns it or if user is tutor
-                              const canSee = 
-                                response.isPublic || 
+                              const canSee =
+                                response.isPublic ||
                                 String(response.studentId) === String(userData._id) ||
                                 String(group.tutorId) === String(userData._id)
 

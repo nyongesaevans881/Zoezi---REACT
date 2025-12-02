@@ -10,7 +10,7 @@ export default function StudentDashboard() {
   const [searchParams] = useSearchParams()
   const activeTab = searchParams.get('tab') || 'profile'
 
-  const renderTabContent = ({ userData, setUserData, handleLogout }) => {
+  const renderTabContent = ({ userData, setUserData, handleLogout, refreshUserData }) => {
     // Handle dynamic course tabs
     if (activeTab.startsWith('course-')) {
       const courseId = activeTab.replace('course-', '')
@@ -19,15 +19,15 @@ export default function StudentDashboard() {
 
     switch (activeTab) {
       case 'profile':
-        return <ProfileTab userData={userData} setUserData={setUserData} userType="student" />
+        return <ProfileTab userData={userData} setUserData={setUserData} userType="student" refreshUserData={refreshUserData}/>
       case 'settings':
-        return <SettingsTab userData={userData} setUserData={setUserData} />
+        return <SettingsTab userData={userData} setUserData={setUserData} refreshUserData={refreshUserData}/>
       case 'courses':
-        return <MyCourses userData={userData} setUserData={setUserData} />
+        return <MyCourses userData={userData} setUserData={setUserData} refreshUserData={refreshUserData}/>
       case 'certifications':
         return <StudentCertifications userData={userData} />
       default:
-        return <ProfileTab userData={userData} setUserData={setUserData} userType="student" />
+        return <ProfileTab userData={userData} setUserData={setUserData} userType="student" refreshUserData={refreshUserData}/>
     }
   }
 

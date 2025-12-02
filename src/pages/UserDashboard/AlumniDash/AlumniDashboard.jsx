@@ -5,7 +5,7 @@ import SettingsTab from '../components/SettingsTab'
 import SubscriptionTab from './components/SubscriptionTab'
 import MyCourses from '../components/MyCourses'
 import CPDHistoryTab from './components/CPDHistoryTab'
-import PlaceholderTabs from '../PlaceholderTabs'
+import PlaceholderTabs from '../components/PlaceholderTabs'
 
 export default function AlumniDashboard() {
   const [searchParams] = useSearchParams()

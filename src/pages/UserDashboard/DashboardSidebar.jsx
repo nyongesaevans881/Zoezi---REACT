@@ -1,6 +1,6 @@
 import { FaUser, FaCog, FaEye, FaWallet, FaSignOutAlt, FaBars, FaTimes, FaAward, FaUsers, FaSwatchbook, FaGraduationCap, FaMoneyBillWave } from 'react-icons/fa'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TbTableImport } from 'react-icons/tb'
 
@@ -8,6 +8,11 @@ export default function DashboardSidebar({ userData, onLogout, userType }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = searchParams.get('tab') || 'profile'
+
+   useEffect(() => {
+    console.log('DashboardSidebar userData updated:', userData);
+    console.log('User courses:', userData?.courses);
+  }, [userData]);
 
   const handleTabClick = (tab) => {
     setSearchParams({ tab })
@@ -34,7 +39,7 @@ export default function DashboardSidebar({ userData, onLogout, userType }) {
         { icon: FaWallet, label: 'My Courses', id: 'courses' },
         { icon: FaGraduationCap, label: 'Certifications', id: 'certifications' }
       ]
-      
+
       // Add dynamic course tabs for enrolled courses
       if (userData?.courses && userData.courses.length > 0) {
         userData.courses.forEach(course => {
@@ -46,7 +51,7 @@ export default function DashboardSidebar({ userData, onLogout, userType }) {
           })
         })
       }
-      
+
       return studentItems
     } else if (userType === 'tutor') {
       return [
@@ -70,7 +75,7 @@ export default function DashboardSidebar({ userData, onLogout, userType }) {
       {/* Mobile Toggle */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="fixed bottom-5 left-4 md:hidden z-9999 p-2 rounded-lg bg-brand-gold text-white font-bold flex items-center gap-2"
+        className="fixed bottom-5 left-4 md:hidden z-99999 p-2 rounded-lg bg-brand-gold text-white font-bold flex items-center gap-2"
       >
         {isMobileOpen ? (
           <>
@@ -85,7 +90,7 @@ export default function DashboardSidebar({ userData, onLogout, userType }) {
 
       {/* Sidebar */}
       <motion.aside
-        className="fixed left-0 top-0 h-screen w-72 bg-brand-dark text-white overflow-y-auto z-40 pt-8 px-6 md:pt-10 md:px-8"
+        className="fixed left-0 top-0 h-screen w-72 bg-brand-dark text-white overflow-y-auto z-9999 pt-8 px-6 md:pt-10 md:px-8"
         initial={{ x: -300 }}
         animate={{ x: isMobileOpen || window.innerWidth >= 768 ? 0 : -300 }}
         transition={{ duration: 0.3 }}
@@ -151,11 +156,10 @@ function NavButton({ icon: Icon, label, isActive, onClick, isCourseName }) {
   return (
     <button
       onClick={onClick}
-      className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium text-sm ${
-        isActive
+      className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium text-sm ${isActive
           ? 'bg-brand-gold text-brand-dark'
           : 'text-white hover:opacity-80'
-      } ${isCourseName ? 'pl-8 text-sm' : ''}`}
+        } ${isCourseName ? 'pl-8 text-sm' : ''}`}
     >
       <Icon className="flex-shrink-0" /> <span className="truncate">{label}</span>
     </button>

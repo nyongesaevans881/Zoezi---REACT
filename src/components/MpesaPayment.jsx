@@ -93,6 +93,7 @@ export default function MpesaPayment({ onClose, amount: initialAmount, onSuccess
         transactionId: result.data?.transactionId || result.data?.TransactionID,
         checkoutRequestId: checkoutRequestId,
         phone,
+        timeOfPayment: new Date().toISOString(),
       }
 
       // Notify parent and close — parent handles persistence/update
@@ -133,36 +134,6 @@ export default function MpesaPayment({ onClose, amount: initialAmount, onSuccess
       console.log("Payment status response:", data)
       setPaymentLoading(false)
 
-      // if (response.ok) {
-      //   if (data.ResultCode === "0") {
-      //     setStatus(true)
-      //     toast.success("Payment Successful!")
-      //     console.log("Payment successful data:", data)
-
-      //     const paymentData = {
-      //       phone,
-      //       amount,
-      //       transactionId: data.TransactionID,
-      //       checkoutRequestId: checkoutRequestId,
-      //     }
-
-      //     try {
-      //       onSuccess(paymentData)
-      //     } catch (err) {
-      //       console.error("onSuccess handler threw:", err)
-      //     }
-
-      //     setTimeout(() => onClose && onClose(), 800)
-      //   } else if (data.ResultCode === "2001") {
-      //     setError("The initiator information was invalid. Please check your PIN and try again")
-      //   } else if (data.ResultCode === "1037") {
-      //     setError("DS Timeout. Please initiate again and respond Quicker")
-      //   } else {
-      //     setError(data.ResultDesc || "Failed to check payment status")
-      //   }
-      // } else {
-      //   setError(data.message || "Failed to check payment status")
-      // }
     } catch (err) {
       setPaymentLoading(false)
       setError(err.message)
