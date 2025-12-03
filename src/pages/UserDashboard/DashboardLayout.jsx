@@ -74,7 +74,6 @@ export default function DashboardLayout({ userType, children }) {
 
 
       if (response.ok) {
-        toast.success(`Layout Data Updated`);
         const data = await response.json();
         const newUserData = data.data.user;
         setUserData(newUserData);

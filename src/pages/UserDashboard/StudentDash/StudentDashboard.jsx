@@ -6,6 +6,8 @@ import MyCourses from '../components/MyCourses'
 import StudentCourseView from '../components/StudentCourseView'
 import StudentCertifications from '../components/StudentCertifications'
 import Dashboard from '../components/Dashboard'
+import SubscriptionTab from '../components/SubscriptionTab'
+import CPDHistoryTab from '../components/CPDHistoryTab'
 
 export default function StudentDashboard() {
   const [searchParams] = useSearchParams()
@@ -29,6 +31,10 @@ export default function StudentDashboard() {
         return <MyCourses userData={userData} setUserData={setUserData} refreshUserData={refreshUserData}/>
       case 'certifications':
         return <StudentCertifications userData={userData} etUserData={setUserData} refreshUserData={refreshUserData}/>
+      case 'subscription':
+        return <SubscriptionTab userData={userData} etUserData={setUserData} refreshUserData={refreshUserData}/>
+      case 'cpd':
+        return <CPDHistoryTab userData={userData} etUserData={setUserData} refreshUserData={refreshUserData}/>
       default:
         return <ProfileTab userData={userData} setUserData={setUserData} userType="student" refreshUserData={refreshUserData}/>
     }

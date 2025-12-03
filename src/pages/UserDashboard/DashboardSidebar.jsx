@@ -60,6 +60,8 @@ const getNavItems = () => {
       { icon: FaWallet, label: 'My Courses', id: 'courses' },
       // Dynamic courses will be inserted here
       { icon: FaGraduationCap, label: 'Certifications', id: 'certifications' },
+      { icon: FaWallet, label: 'Subscription', id: 'subscription' },
+      { icon: FaAward, label: 'CPD Records', id: 'cpd', condition: userData?.verified },
       { icon: FaCog, label: 'Settings', id: 'settings' }
     ]
 

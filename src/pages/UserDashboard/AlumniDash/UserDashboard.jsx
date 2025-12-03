@@ -5,8 +5,8 @@ import toast from 'react-hot-toast'
 import DashboardSidebar from '../DashboardSidebar'
 import ProfileTab from '../components/ProfileTab'
 import SettingsTab from '../components/SettingsTab'
-import SubscriptionTab from './components/SubscriptionTab'
-import CPDHistoryTab from './components/CPDHistoryTab'
+import SubscriptionTab from '../components/SubscriptionTab'
+import CPDHistoryTab from '../components/CPDHistoryTab'
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL
 
