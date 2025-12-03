@@ -49,7 +49,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
 
           {/* Discount badge */}
           {hasActiveOffer(course) && (
-            <div className="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+            <div className="absolute top-4 right-4 bg-primary-gold text-white text-xs font-bold px-3 py-1 rounded-full">
               Save {calculateDiscountPercentage(course)}%
             </div>
           )}
