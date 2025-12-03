@@ -182,7 +182,7 @@ export default function SearchMembers() {
             </a>
           )}
 
-          <a className="contact-link flex justify-between" title="Email"> 
+          <a className="contact-link flex justify-between" title="Email">
             <span>Current Location:</span>
             {profile.currentLocation ? (
               <span>{profile.currentLocation}</span>) : (
@@ -218,14 +218,16 @@ export default function SearchMembers() {
           transition={{ duration: 0.6 }}
         >
           <div className="search-wrapper">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search by name, ID, email, or phone..."
-              className="search-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <div className="flex items-center gap-2">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search by name, ID, email, or phone..."
+                className="search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
             <button type="submit" className="search-btn" disabled={isSearching}>
               {isSearching ? "Searching..." : "Search"}
             </button>

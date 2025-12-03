@@ -58,7 +58,7 @@ export default function Navbar() {
               Search Member
             </Link>
             <Link to="/login" className="btn-login">
-              Join / Login 
+              Join / Login
             </Link>
           </div>
 
@@ -91,7 +91,7 @@ export default function Navbar() {
                       Search Member
                     </Link>
                     <Link to="/login" className="btn-login mobile-btn" onClick={() => setIsOpen(false)}>
-                      Alumni Login
+                      Join / Login
                     </Link>
                   </div>
 

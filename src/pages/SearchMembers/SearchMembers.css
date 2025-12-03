@@ -10,6 +10,7 @@
 
 .search-wrapper {
   display: flex;
+  justify-content: space-between;
   gap: 0.75rem;
   background: var(--color-white);
   padding: 0.75rem;
@@ -22,6 +23,12 @@
 .search-wrapper:focus-within {
   border-color: var(--color-primary-gold);
   box-shadow: 0 4px 20px rgba(212, 166, 68, 0.2);
+}
+
+@media (max-width: 680px) {
+  .search-wrapper {
+    flex-direction: column;
+  }
 }
 
 .search-icon {
@@ -259,7 +266,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  /* color: var(--color-primary-gold); */
+  color: #2b2520;
+  font-weight: 600;
   text-decoration: none;
   font-size: 0.9rem;
   transition: all 0.2s ease;
