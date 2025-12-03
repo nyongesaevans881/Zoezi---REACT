@@ -133,7 +133,7 @@ export default function DashboardLayout({ userType, children }) {
         <TopNav />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-1 md:p-8 overflow-y-auto max-md:p-1">
+        <main className="flex-1 p-4 sm:p-4 md:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             {children({
               userData,

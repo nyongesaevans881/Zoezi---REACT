@@ -286,7 +286,7 @@ const StudentCourseView = ({ userData, courseId }) => {
     courseEnroll.payment.status
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Group Info Widget */}
       <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-brand-gold">
         <h3 className="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
@@ -383,7 +383,7 @@ const StudentCourseView = ({ userData, courseId }) => {
       )}
 
       {/* Curriculum Items */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white rounded-lg shadow-md p-6 max-md:p-2">
         <h4 className="font-semibold text-brand-dark mb-6 text-xl">Course Materials</h4>
 
         {(!group.curriculumItems || group.curriculumItems.length === 0) ? (
