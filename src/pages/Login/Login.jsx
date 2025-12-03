@@ -57,9 +57,9 @@ const handleLogin = async (e) => {
     login(data.data.user, data.data.token, data.data.user.userType || userType);
     
     toast.success('Login successful!');
-    if (data.data.user.userType === 'student') navigate('/student/dashboard');
-    else if (data.data.user.userType === 'tutor') navigate('/tutor/dashboard');
-    else if (data.data.user.userType === 'alumni') navigate('/alumni/dashboard');
+    if (data.data.user.userType === 'student') navigate('/student/dashboard?tab=dashboard');
+    else if (data.data.user.userType === 'tutor') navigate('/tutor/dashboard?tab=dashboard');
+    else if (data.data.user.userType === 'alumni') navigate('/alumni/dashboard?tab=dashboard');
   } catch (err) {
     toast.error(err.message || 'Login failed');
   } finally {

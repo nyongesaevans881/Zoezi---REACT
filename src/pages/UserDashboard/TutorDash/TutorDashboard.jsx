@@ -35,7 +35,7 @@ export default function TutorDashboard() {
       case 'settlements':
         return <TutorSettlements userData={userData} />
       default:
-        return <ProfileTab userData={userData} setUserData={setUserData} userType="tutor" />
+        return <Dashboard userData={userData} setUserData={setUserData} userType="tutor" />
     }
   }
 

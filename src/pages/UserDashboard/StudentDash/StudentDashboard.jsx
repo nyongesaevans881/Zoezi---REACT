@@ -36,7 +36,7 @@ export default function StudentDashboard() {
       case 'cpd':
         return <CPDHistoryTab userData={userData} etUserData={setUserData} refreshUserData={refreshUserData}/>
       default:
-        return <ProfileTab userData={userData} setUserData={setUserData} userType="student" refreshUserData={refreshUserData}/>
+        return <Dashboard userData={userData} setUserData={setUserData} userType="student" refreshUserData={refreshUserData}/>
     }
   }
 
