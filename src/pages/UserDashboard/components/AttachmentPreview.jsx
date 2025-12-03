@@ -6,7 +6,6 @@ import {
 } from 'react-icons/fa'
 
 const AttachmentPreview = ({ type, url, title, className = '' }) => {
-    console.log('AttachmentPreview props:', { type, url, title, className })
   const [thumbnail, setThumbnail] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   

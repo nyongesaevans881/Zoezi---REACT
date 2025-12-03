@@ -11,6 +11,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
   const [loading, setLoading] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const userType = localStorage.getItem('userType')
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -30,8 +31,12 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
   const fetchEnrolledCourses = async () => {
     if (!userData?._id) return
     try {
-      const res = await fetch(`${API_BASE}/users/${userData._id}/courses`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const res = await fetch(`${API_BASE}/users/${userData._id}/courses?userType=${userType}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
       })
 
       const data = await res.json()
@@ -42,8 +47,6 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
     }
   }
 
-
-  // In MyCourses.js, update the fetchAvailableCourses function:
   const fetchAvailableCourses = async () => {
     setLoading(true);
     try {
@@ -54,10 +57,9 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
       const courses = data.data?.courses || data.data || [];
 
       // Get fresh enrolled data from the server
-      const enrolledRes = await fetch(`${API_BASE}/users/${userData._id}/courses`, {
+      const enrolledRes = await fetch(`${API_BASE}/users/${userData._id}/courses?userType=${userType}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-
       const enrolledData = await enrolledRes.json();
       const currentEnrolled = enrolledData.data || enrolled;
 
@@ -84,19 +86,18 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
     }
   };
 
-
   const openEnroll = (course) => {
     setSelectedCourse(course)
     setShowModal(true)
   }
 
   const handleEnrollSuccess = () => {
-    // Instead of manually updating, just refresh both lists
     fetchEnrolledCourses();
     fetchAvailableCourses();
   }
 
   const handlePaymentSuccess = async (paymentData) => {
+
     try {
       const res = await fetch(`${API_BASE}/users/enroll`, {
         method: 'POST',
@@ -108,6 +109,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
           userId: userData._id,
           courseId: selectedCourse._id,
           paymentData: paymentData,
+          userType: userType,
         }),
       });
 
@@ -140,6 +142,9 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
       toast.error('Enrollment failed: ' + err.message);
     }
   };
+
+
+
   return (
     <div className="space-y-8">
       {/* Enrolled Courses Section */}

@@ -3,8 +3,8 @@ import DashboardLayout from '../DashboardLayout'
 import ProfileTab from '../components/ProfileTab'
 import SettingsTab from '../components/SettingsTab'
 import MyCourses from '../components/MyCourses'
-import StudentCourseView from './components/StudentCourseView'
-import StudentCertifications from './components/StudentCertifications'
+import StudentCourseView from '../components/StudentCourseView'
+import StudentCertifications from '../components/StudentCertifications'
 import Dashboard from '../components/Dashboard'
 
 export default function StudentDashboard() {
@@ -28,7 +28,7 @@ export default function StudentDashboard() {
       case 'courses':
         return <MyCourses userData={userData} setUserData={setUserData} refreshUserData={refreshUserData}/>
       case 'certifications':
-        return <StudentCertifications userData={userData} />
+        return <StudentCertifications userData={userData} etUserData={setUserData} refreshUserData={refreshUserData}/>
       default:
         return <ProfileTab userData={userData} setUserData={setUserData} userType="student" refreshUserData={refreshUserData}/>
     }

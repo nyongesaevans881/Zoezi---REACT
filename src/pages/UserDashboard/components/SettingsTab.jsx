@@ -350,7 +350,7 @@ export default function SettingsTab({ userData, onUserUpdate }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="max-w-4xl mx-auto space-y-6 p-4"
+      className="max-w-4xl mx-auto space-y-6"
     >
       {/* Header with refresh button */}
       <div className="flex justify-between items-center">

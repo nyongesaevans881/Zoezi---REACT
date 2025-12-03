@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TbTableImport } from 'react-icons/tb'
+import { MdDashboard } from "react-icons/md";
 
 export default function DashboardSidebar({ userData, onLogout, userType }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -15,53 +16,86 @@ export default function DashboardSidebar({ userData, onLogout, userType }) {
   }
 
   // Define navigation based on user type
-  const getNavItems = () => {
-    const baseItems = [
-      { icon: FaUser, label: 'Dashboard', id: 'dashboard' },
+const getNavItems = () => {
+  const baseItems = [
+    { icon: MdDashboard, label: 'Dashboard', id: 'dashboard' },
+  ]
+
+  if (userType === 'alumni') {
+    // For alumni: Insert dynamic courses between "My Courses" and "Certifications"
+    const alumniBaseItems = [
+      ...baseItems,
+      { icon: FaUser, label: 'My Profile', id: 'profile' },
+      { icon: FaWallet, label: 'My Courses', id: 'courses' },
+      // Dynamic courses will be inserted here
+      { icon: FaGraduationCap, label: 'Certifications', id: 'certifications' },
+      { icon: FaWallet, label: 'Subscription', id: 'subscription' },
+      { icon: FaAward, label: 'CPD Records', id: 'cpd', condition: userData?.verified },
       { icon: FaCog, label: 'Settings', id: 'settings' }
     ]
 
-    if (userType === 'alumni') {
-      return [
-        ...baseItems,
-        { icon: FaWallet, label: 'Subscription', id: 'subscription' },
-        { icon: FaAward, label: 'CPD Records', id: 'cpd', condition: userData?.verified },
-        { icon: FaEye, label: 'Preview Profile', id: 'preview' }
-      ]
-    } else if (userType === 'student') {
-      const studentItems = [
-        ...baseItems,
-        { icon: FaWallet, label: 'My Courses', id: 'courses' },
-        { icon: FaGraduationCap, label: 'Certifications', id: 'certifications' }
-      ]
-
-      // Add dynamic course tabs for enrolled courses
-      if (userData?.courses && userData.courses.length > 0) {
-        userData.courses.forEach(course => {
-          studentItems.push({
-            icon: FaSwatchbook,
-            label: course.name || `Course`,
-            id: `course-${course.courseId}`,
-            isCourseName: true
-          })
-        })
-      }
-
-      return studentItems
-    } else if (userType === 'tutor') {
-      return [
-        ...baseItems,
-        { icon: FaWallet, label: 'My Courses', id: 'courses' },
-        { icon: FaUsers, label: 'My Students', id: 'mystudents' },
-        { icon: FaSwatchbook, label: 'Curriculum', id: 'curriculum' },
-        { icon: TbTableImport, label: 'Timetables', id: 'groupcurriculum' },
-        { icon: FaGraduationCap, label: 'Certification', id: 'certification' },
-        { icon: FaMoneyBillWave, label: 'Settlements', id: 'settlements' }
-      ]
+    // Find the index where "My Courses" is located
+    const coursesIndex = alumniBaseItems.findIndex(item => item.id === 'courses')
+    const certificationsIndex = alumniBaseItems.findIndex(item => item.id === 'certifications')
+    
+    // Insert dynamic courses between "My Courses" and "Certifications"
+    if (userData?.courses && userData.courses.length > 0 && coursesIndex !== -1) {
+      const dynamicCourseItems = userData.courses.map(course => ({
+        icon: FaSwatchbook,
+        label: course.name || 'Course',
+        id: `course-${course.courseId}`,
+        isCourseName: true
+      }))
+      
+      // Insert dynamic courses at the position after "My Courses"
+      alumniBaseItems.splice(certificationsIndex, 0, ...dynamicCourseItems)
     }
 
-    return baseItems
+    return alumniBaseItems
+    
+  } else if (userType === 'student') {
+    // For students: Insert dynamic courses between "My Courses" and "Certifications"
+    const studentBaseItems = [
+      ...baseItems,
+      { icon: FaWallet, label: 'My Courses', id: 'courses' },
+      // Dynamic courses will be inserted here
+      { icon: FaGraduationCap, label: 'Certifications', id: 'certifications' },
+      { icon: FaCog, label: 'Settings', id: 'settings' }
+    ]
+
+    // Find the index where "Certifications" is located
+    const certificationsIndex = studentBaseItems.findIndex(item => item.id === 'certifications')
+    
+    // Insert dynamic courses before "Certifications"
+    if (userData?.courses && userData.courses.length > 0 && certificationsIndex !== -1) {
+      const dynamicCourseItems = userData.courses.map(course => ({
+        icon: FaSwatchbook,
+        label: course.name || 'Course',
+        id: `course-${course.courseId}`,
+        isCourseName: true
+      }))
+      
+      // Insert dynamic courses at the position before "Certifications"
+      studentBaseItems.splice(certificationsIndex, 0, ...dynamicCourseItems)
+    }
+
+    return studentBaseItems
+    
+  } else if (userType === 'tutor') {
+    return [
+      ...baseItems,
+      { icon: FaWallet, label: 'My Courses', id: 'courses' },
+      { icon: FaUsers, label: 'My Students', id: 'mystudents' },
+      { icon: FaSwatchbook, label: 'Curriculum', id: 'curriculum' },
+      { icon: TbTableImport, label: 'Timetables', id: 'groupcurriculum' },
+      { icon: FaGraduationCap, label: 'Certification', id: 'certification' },
+      { icon: FaMoneyBillWave, label: 'Settlements', id: 'settlements' },
+      { icon: FaCog, label: 'Settings', id: 'settings' }
+    ]
   }
+
+  return baseItems
+}
 
   const navItems = getNavItems()
 
@@ -152,8 +186,8 @@ function NavButton({ icon: Icon, label, isActive, onClick, isCourseName }) {
     <button
       onClick={onClick}
       className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium text-sm ${isActive
-          ? 'bg-brand-gold text-brand-dark'
-          : 'text-white hover:opacity-80'
+        ? 'bg-brand-gold text-brand-dark'
+        : 'text-white hover:opacity-80'
         } ${isCourseName ? 'pl-8 text-sm' : ''}`}
     >
       <Icon className="flex-shrink-0" /> <span className="truncate">{label}</span>

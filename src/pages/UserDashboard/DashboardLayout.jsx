@@ -50,6 +50,7 @@ export default function DashboardLayout({ userType, children }) {
 
   // In DashboardLayout.js, update the refreshUserData function:
   const refreshUserData = async () => {
+
     try {
       const token = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
@@ -70,6 +71,7 @@ export default function DashboardLayout({ userType, children }) {
           userType: localStorage.getItem('userType')
         })
       });
+
 
       if (response.ok) {
         toast.success(`Layout Data Updated`);

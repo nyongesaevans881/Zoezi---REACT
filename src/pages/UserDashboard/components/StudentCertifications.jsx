@@ -7,6 +7,7 @@ const StudentCertifications = ({ userData }) => {
   const [loading, setLoading] = useState(true)
   const [selectedCourse, setSelectedCourse] = useState(null)
   const API = import.meta.env.VITE_SERVER_URL
+  const userType = localStorage.getItem('userType')
 
   const authHeader = () => ({
     Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -19,7 +20,7 @@ const StudentCertifications = ({ userData }) => {
   const fetchFreshCourseData = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`${API}/users/profile`, {
+      const response = await fetch(`${API}/users/profile?userType=${userType}`, {
         headers: authHeader()
       })
       
@@ -240,7 +241,7 @@ const StudentCertifications = ({ userData }) => {
                 <div class="date-gpa">
                   <div class="date-gpa-item">
                     <div class="date-gpa-label">GPA</div>
-                    <div class="date-gpa-value">${course.gpa || 'N/A'}</div>
+                    <div class="date-gpa-value">${course.gpa.toFixed(1) || 'N/A'}</div>
                   </div>
                   <div class="date-gpa-item">
                     <div class="date-gpa-label">Date of Completion</div>

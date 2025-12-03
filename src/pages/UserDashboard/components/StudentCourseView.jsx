@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { IoClose } from 'react-icons/io5'
 import { FaUsers, FaChalkboardTeacher, FaBook, FaCalendarAlt, FaClipboardCheck, FaGraduationCap, FaPaperclip } from 'react-icons/fa'
-import AttachmentPreview from '../../components/AttachmentPreview' // Import the reusable component
+import AttachmentPreview from './AttachmentPreview' // Import the reusable component
 
 const ATTACHMENT_TYPES = [
   { value: 'none', label: 'No Attachment', icon: FaBook },
@@ -53,7 +53,10 @@ const StudentCourseView = ({ userData, courseId }) => {
   const [isQuestion, setIsQuestion] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
 
-  // Fetch curriculum on mount
+   // Get userType from localStorage
+  const userType = localStorage.getItem('userType')
+
+ // Fetch curriculum on mount - UPDATED to include userType
   useEffect(() => {
     const fetchCurriculum = async () => {
       try {
@@ -63,7 +66,7 @@ const StudentCourseView = ({ userData, courseId }) => {
           return
         }
 
-        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/student-curriculum?courseId=${courseId}`, {
+        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/student-curriculum?courseId=${courseId}&userType=${userType}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -88,9 +91,10 @@ const StudentCourseView = ({ userData, courseId }) => {
     }
 
     fetchCurriculum()
-  }, [courseId])
+  }, [courseId, userType])
 
-  // Handle payment notification close
+
+ // Handle payment notification close - UPDATED to include userType
   const handleHidePaymentNotification = async () => {
     try {
       const token = localStorage.getItem('token')
@@ -100,7 +104,10 @@ const StudentCourseView = ({ userData, courseId }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ courseId })
+        body: JSON.stringify({ 
+          courseId,
+          userType // Add userType to body
+        })
       })
 
       const json = await res.json()
@@ -136,7 +143,7 @@ const StudentCourseView = ({ userData, courseId }) => {
     setAttachments(newAttachments)
   }
 
-  // Handle response submission
+// Handle response submission - UPDATED to include userType
   const handleSubmitResponse = async (itemId) => {
     if (!responseText.trim()) {
       toast.error('Please enter a response')
@@ -166,7 +173,8 @@ const StudentCourseView = ({ userData, courseId }) => {
           responseText,
           attachments: validAttachments,
           isQuestion,
-          isPublic: isQuestion ? isPublic : false
+          isPublic: isQuestion ? isPublic : false,
+          userType // Add userType to body
         })
       })
 

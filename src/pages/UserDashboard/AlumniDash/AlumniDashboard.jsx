@@ -7,29 +7,37 @@ import MyCourses from '../components/MyCourses'
 import CPDHistoryTab from './components/CPDHistoryTab'
 import PlaceholderTabs from '../components/PlaceholderTabs'
 import Dashboard from '../components/Dashboard'
+import StudentCertifications from '../components/StudentCertifications'
+import StudentCourseView from '../components/StudentCourseView'
 
 export default function AlumniDashboard() {
   const [searchParams] = useSearchParams()
   const activeTab = searchParams.get('tab') || 'profile'
 
-  const renderTabContent = ({ userData, setUserData, handleLogout }) => {
+  const renderTabContent = ({ userData, setUserData, handleLogout, refreshUserData }) => {
+        // Handle dynamic course tabs
+    if (activeTab.startsWith('course-')) {
+      const courseId = activeTab.replace('course-', '')
+      return <StudentCourseView userData={userData} courseId={courseId} />
+    } 
+
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard userData={userData} setUserData={setUserData} userType="alumni" />
+        return <Dashboard userData={userData} setUserData={setUserData} userType="alumni" refreshUserData={refreshUserData}/>
       case 'profile':
-        return <ProfileTab userData={userData} setUserData={setUserData} userType="alumni" />
-      case 'settings':
-        return <SettingsTab userData={userData} setUserData={setUserData} />
-      case 'subscription':
-        return <SubscriptionTab userData={userData} setUserData={setUserData} />
-      case 'cpd':
-        return userData?.verified ? <CPDHistoryTab userData={userData} /> : <PlaceholderTabs title="CPD Records" description="CPD records available for verified alumni" />
-      case 'preview':
-        return <PlaceholderTabs title="Preview Profile" description="Preview your public alumni profile" />
+        return <ProfileTab userData={userData} setUserData={setUserData} userType="alumni" refreshUserData={refreshUserData}/>
       case 'courses':
-        return <MyCourses userData={userData} setUserData={setUserData} />
+        return <MyCourses userData={userData} setUserData={setUserData} userType="alumni" refreshUserData={refreshUserData}/>
+      case 'certifications':
+        return <StudentCertifications userData={userData} setUserData={setUserData} userType="alumni" refreshUserData={refreshUserData}/>
+      case 'subscription':
+        return <SubscriptionTab userData={userData} setUserData={setUserData} userType="alumni" refreshUserData={refreshUserData}/>
+      case 'settings':
+        return <SettingsTab userData={userData} setUserData={setUserData} userType="alumni" refreshUserData={refreshUserData}/>
+      case 'cpd':
+        return <CPDHistoryTab userData={userData} setUserData={setUserData} userType="alumni" refreshUserData={refreshUserData}/>
       default:
-        return <ProfileTab userData={userData} setUserData={setUserData} userType="alumni" />
+        return <Dashboard userData={userData} setUserData={setUserData} userType="alumni" refreshUserData={refreshUserData}/>
     }
   }
 
