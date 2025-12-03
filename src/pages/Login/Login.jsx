@@ -115,11 +115,11 @@ const handleLogin = async (e) => {
             <h2 className="text-3xl font-bold text-gray-600 mb-6 text-center">{showRegister ? 'Create Student Account' : 'Login to NZI'}</h2>
             {/* User Type Selection */}
             {!showRegister && (
-              <div className="flex justify-center gap-4 mb-8">
+              <div className="flex justify-center gap-4 mb-8 max-md:gap-1">
                 {USER_TYPES.map(type => (
                   <button
                     key={type.value}
-                    className={`cursor-pointer px-6 py-1 rounded-xl font-bold text-lg border-2 transition-colors ${userType === type.value ? 'bg-brand-gold text-white border-brand-gold' : 'bg-light-gray text-brand-dark border-gray-200'}`}
+                    className={`cursor-pointer px-6 py-1 max-md:px-3 rounded-xl font-bold text-lg max-md:text-md border-2 transition-colors ${userType === type.value ? 'bg-brand-gold text-white border-brand-gold' : 'bg-light-gray text-brand-dark border-gray-200'}`}
                     onClick={() => setUserType(type.value)}
                   >
                     {type.label}
