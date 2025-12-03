@@ -8,11 +8,14 @@ import { GrCertificate, GrMoney } from "react-icons/gr"
 import { LuDumbbell } from "react-icons/lu"
 import { GiGymBag } from "react-icons/gi"
 import GalleryComponent from "../../components/GalleryComponent"
+import CoursesSection from "./components/CoursesSection"
 
 export default function Home() {
   return (
     <div className="">
       <HeroSection />
+
+      <CoursesSection />
 
       {/* About Preview Section */}
       <section className="section about-preview">

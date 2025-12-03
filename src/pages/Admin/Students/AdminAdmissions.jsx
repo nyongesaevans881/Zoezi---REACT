@@ -2,6 +2,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import AdminLayout from "../AdminLayout/AdminLayout"
 import toast from "react-hot-toast"
+import { Link } from "react-router-dom"
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL
 
@@ -16,10 +17,10 @@ export default function AdminAdmissions() {
     gender: "",
     citizenship: "",
     idNumber: "",
-    
+
     // Admission Info
     admissionNumber: "",
-    
+
     // Education Info
     qualification: "",
     course: "",
@@ -28,20 +29,20 @@ export default function AdminAdmissions() {
     preferredStartDate: "",
     startDate: "",
     kcseGrade: "",
-    
+
     // Application History
     howHeardAbout: [],
     otherSource: "",
-    
+
     // Finance
     courseFee: "",
     upfrontFee: "",
     feePayer: "",
     feePayerPhone: "",
-    
+
     // Course Specific
     courseDuration: "",
-    
+
     // Emergency Contact
     nextOfKinName: "",
     nextOfKinRelationship: "",
@@ -165,7 +166,7 @@ export default function AdminAdmissions() {
 
     try {
       const fd = new FormData()
-      
+
       // Append all form fields
       Object.entries(formData).forEach(([key, value]) => {
         if (key === "howHeardAbout" && Array.isArray(value)) {
@@ -188,7 +189,7 @@ export default function AdminAdmissions() {
 
       const res = await fetch(`${API_BASE_URL}/admissions`, { method: "POST", body: fd })
       const data = await res.json()
-      
+
       if (!res.ok) throw new Error(data.message || "Failed to create student")
 
       toast.success("Student created successfully!")
@@ -241,6 +242,33 @@ export default function AdminAdmissions() {
         <div style={{ margin: "0 auto", padding: "0 1rem" }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div style={{ marginBottom: "2rem" }}>
+              <div className='flex gap-2'>
+                <Link
+                  className='bg-primary-gold text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-yellow transition-colors'
+                  to="/admin/students">
+                  Students
+                </Link>
+                <Link
+                  className='bg-blue-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-500 transition-colors'
+                  to="/admin/applications">
+                  Applications
+                </Link>
+                <Link
+                  className='bg-green-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-500 transition-colors'
+                  to="/admin/admissions">
+                  Admissions
+                </Link>
+                <Link
+                  className='bg-red-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-500 transition-colors'
+                  to="/admin/update-fee">
+                  Update Fee
+                </Link>
+                <Link
+                  className='bg-purple-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-500 transition-colors'
+                  to="/admin/details">
+                  Details
+                </Link>
+              </div>
               <h2 style={{ color: "#2b2520", fontSize: "2.5rem", fontWeight: "700", marginBottom: "0.5rem" }}>
                 Manual Student Admissions
               </h2>

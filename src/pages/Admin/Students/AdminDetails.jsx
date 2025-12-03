@@ -3,16 +3,17 @@ import toast from 'react-hot-toast';
 import { FaEdit, FaSave, FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
 import { CiSearch } from "react-icons/ci";
 import AdminLayout from '../AdminLayout/AdminLayout';
+import { Link } from "react-router-dom"
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL;
 
 const GRADE_OPTIONS = [
-  { value: '', label: 'Select Grade' },
-  { value: 'Distinction', label: 'Distinction' },
-  { value: 'Merit', label: 'Merit' },
-  { value: 'Credit', label: 'Credit' },
-  { value: 'Pass', label: 'Pass' },
-  { value: 'Fail', label: 'Fail' }
+    { value: '', label: 'Select Grade' },
+    { value: 'Distinction', label: 'Distinction' },
+    { value: 'Merit', label: 'Merit' },
+    { value: 'Credit', label: 'Credit' },
+    { value: 'Pass', label: 'Pass' },
+    { value: 'Fail', label: 'Fail' }
 ];
 
 const SECTIONS = {
@@ -188,9 +189,9 @@ export default function AdminDetails() {
             toast.error('Please select a date');
             return;
         }
-        const updatedCpd = [...editData.cpdRecords, { 
-            year: newCpdYear, 
-            dateTaken: newCpdDate, 
+        const updatedCpd = [...editData.cpdRecords, {
+            year: newCpdYear,
+            dateTaken: newCpdDate,
             result: newCpdResult,
             score: newCpdScore ? Number(newCpdScore) : null,
             remarks: newCpdRemarks
@@ -304,6 +305,33 @@ export default function AdminDetails() {
             <div className="w-full">
                 {/* Header */}
                 <div className="mb-6">
+                    <div className='flex gap-2 mb-4'>
+                        <Link
+                            className='bg-primary-gold text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-yellow transition-colors'
+                            to="/admin/students">
+                            Students
+                        </Link>
+                        <Link
+                            className='bg-blue-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-500 transition-colors'
+                            to="/admin/applications">
+                            Applications
+                        </Link>
+                        <Link
+                            className='bg-green-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-500 transition-colors'
+                            to="/admin/admissions">
+                            Admissions
+                        </Link>
+                        <Link
+                            className='bg-red-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-500 transition-colors'
+                            to="/admin/update-fee">
+                            Update Fee
+                        </Link>
+                        <Link
+                            className='bg-purple-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-500 transition-colors'
+                            to="/admin/details">
+                            Details
+                        </Link>
+                    </div>
                     <h2 className="text-2xl font-bold mb-2" style={{ color: '#2b2520' }}>
                         🔍 Search & Edit Details
                     </h2>
@@ -988,7 +1016,7 @@ export default function AdminDetails() {
                                                         <label className="text-xs font-semibold text-gray-600">CPD Points</label>
                                                         <input
                                                             type="number"
-                                                             placeholder="e.g., 3.5"
+                                                            placeholder="e.g., 3.5"
                                                             min="0"
                                                             max="100"
                                                             value={newCpdScore}

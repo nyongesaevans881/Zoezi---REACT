@@ -6,6 +6,7 @@ import AdminLayout from '../AdminLayout/AdminLayout';
 import { LuScanEye } from 'react-icons/lu';
 import { GiGraduateCap } from 'react-icons/gi';
 import { PiStudentBold } from 'react-icons/pi';
+import { Link } from 'react-router-dom';
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -195,11 +196,40 @@ export default function AdminStudents() {
     <AdminLayout>
       <div className="w-full">
         {/* Header */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2" style={{ color: '#2b2520' }}>
-            <PiStudentBold /> Students
-          </h2>
-          <p className="text-sm text-gray-600">Manage student records and graduate students</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold mb-2 flex items-center gap-2" style={{ color: '#2b2520' }}>
+              <PiStudentBold /> Students
+            </h2>
+            <p className="text-sm text-gray-600">Manage student records and graduate students</p>
+          </div>
+          <div className='flex gap-2'>
+            <Link
+              className='bg-primary-gold text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-yellow transition-colors'
+              to="/admin/students">
+              Students
+            </Link>
+            <Link
+              className='bg-blue-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-500 transition-colors'
+              to="/admin/applications">
+              Applications
+            </Link>
+            <Link
+              className='bg-green-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-500 transition-colors'
+              to="/admin/admissions">
+              Admissions
+            </Link>
+            <Link
+              className='bg-red-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-500 transition-colors'
+              to="/admin/update-fee">
+              Update Fee
+            </Link>
+            <Link
+              className='bg-purple-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-500 transition-colors'
+              to="/admin/details">
+              Details
+            </Link>
+          </div>
         </div>
 
         {/* Search & Filter Section */}
@@ -299,7 +329,7 @@ export default function AdminStudents() {
                                 className="px-3 py-1 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1 text-[#3b82f6] border-2 border-[#3b82f6]/50"
                               >
                                 <LuScanEye />
-                                View 
+                                View
                               </button>
                               <button
                                 onClick={() => handleGraduateClick(student)}
@@ -311,7 +341,7 @@ export default function AdminStudents() {
                                 }}
                                 title={!feeComplete ? 'Student fees must be complete' : 'Graduate student'}
                               >
-                                <GiGraduateCap size={20}/>
+                                <GiGraduateCap size={20} />
                                 Graduate
                               </button>
                             </div>

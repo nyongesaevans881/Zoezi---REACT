@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { StudentDetailModal } from '../components/StudentDetailModal';
 import { UpdateFeeModal } from '../components/UpdateFeeModal';
 import AdminLayout from "../AdminLayout/AdminLayout"
+import { Link } from "react-router-dom"
 
 const AdminUpdateFee = () => {
   const [students, setStudents] = useState([]);
@@ -91,7 +92,34 @@ const AdminUpdateFee = () => {
           <h2 className="text-2xl font-bold mb-2" style={{ color: '#2b2520' }}>
             💰 Fee Management
           </h2>
-          <p className="text-sm text-gray-600">Manage student upfront payments and track balances</p>
+          <p className="text-sm text-gray-600 mb-4">Manage student upfront payments and track balances</p>
+          <div className='flex gap-2'>
+            <Link
+              className='bg-primary-gold text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-yellow transition-colors'
+              to="/admin/students">
+              Students
+            </Link>
+            <Link
+              className='bg-blue-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-500 transition-colors'
+              to="/admin/applications">
+              Applications
+            </Link>
+            <Link
+              className='bg-green-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-500 transition-colors'
+              to="/admin/admissions">
+              Admissions
+            </Link>
+            <Link
+              className='bg-red-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-500 transition-colors'
+              to="/admin/update-fee">
+              Update Fee
+            </Link>
+            <Link
+              className='bg-purple-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-500 transition-colors'
+              to="/admin/details">
+              Details
+            </Link>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -114,11 +142,11 @@ const AdminUpdateFee = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-semibold">Expected Fee</p>
-                                <p className="text-2xl font-bold mt-2 text-green-600">
-                    100 %
+                <p className="text-2xl font-bold mt-2 text-green-600">
+                  100 %
                 </p>
                 <p className="text-md text-gray-500 mt-1 font-bold">
-                 KES {(stats.expectedFee).toLocaleString()}
+                  KES {(stats.expectedFee).toLocaleString()}
                 </p>
               </div>
               <FaMoneyBillWave size={40} style={{ color: '#c9952f', opacity: 0.2 }} />
@@ -131,10 +159,10 @@ const AdminUpdateFee = () => {
               <div>
                 <p className="text-gray-600 text-sm font-semibold">Collected Fee</p>
                 <p className="text-2xl font-bold mt-2 text-green-600">
-                    {((stats.collectedFee / stats.expectedFee) * 100).toFixed(2)} %
+                  {((stats.collectedFee / stats.expectedFee) * 100).toFixed(2)} %
                 </p>
                 <p className="text-md text-gray-500 mt-1 font-bold">
-                 KES {(stats.collectedFee).toLocaleString()}
+                  KES {(stats.collectedFee).toLocaleString()}
                 </p>
               </div>
               <FaCheckCircle size={40} style={{ color: '#2b8a3e', opacity: 0.2 }} />

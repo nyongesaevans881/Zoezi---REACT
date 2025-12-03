@@ -23,14 +23,10 @@ export default function AdminLayout({ children }) {
 
   const menuItems = [
     { label: "Dashboard", path: "/admin", icon: <MdOutlineDashboard /> },
-    { label: "Applications", path: "/admin/applications", icon: <IoDocumentAttachOutline /> },
-    { label: "Admissions", path: "/admin/admissions", icon: <FaRegPenToSquare /> },
-    { label: "Update Fee", path: "/admin/update-fee", icon: <MdAttachMoney /> },
     { label: "Students", path: "/admin/students", icon: <LuUsers /> },
     { label: "Tutors", path: "/admin/tutors", icon: <FaChalkboardTeacher /> },
     { label: "Allotment", path: "/admin/assignments", icon: <FaUserTie /> },
     { label: "Courses", path: "/admin/courses", icon: <FaBook /> },
-    { label: "Details", path: "/admin/details", icon: <FiSearch /> },
     { label: "Alumni", path: "/admin/alumni", icon: <LuGraduationCap /> },
     { label: "Subscriptions", path: "/admin/subscriptions", icon: <FaRegCreditCard /> },
     { label: "Settlements", path: "/admin/settlements", icon: <RiMoneyDollarBoxLine /> },

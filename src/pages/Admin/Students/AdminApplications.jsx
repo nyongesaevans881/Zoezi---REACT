@@ -8,6 +8,7 @@ import { FaRegCheckCircle } from "react-icons/fa";
 import { IoMdCloseCircleOutline } from "react-icons/io";
 import { LuRefreshCcw } from "react-icons/lu";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL
 
@@ -169,9 +170,38 @@ export default function AdminApplications() {
   return (
     <AdminLayout>
       <div className="admin-applications">
-        <div className="page-header">
-          <h2>Application Management</h2>
-          <p className="subtitle">Manage and review student applications</p>
+        <div className="page-header flex flex-col gap-4 mb-4">
+          <div>
+            <h2>Application Management</h2>
+            <p className="subtitle">Manage and review student applications</p>
+          </div>
+          <div className='flex gap-2'>
+            <Link
+              className='bg-primary-gold text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-yellow transition-colors'
+              to="/admin/students">
+              Students
+            </Link>
+            <Link
+              className='bg-blue-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-500 transition-colors'
+              to="/admin/applications">
+              Applications
+            </Link>
+            <Link
+              className='bg-green-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-500 transition-colors'
+              to="/admin/admissions">
+              Admissions
+            </Link>
+            <Link
+              className='bg-red-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-500 transition-colors'
+              to="/admin/update-fee">
+              Update Fee
+            </Link>
+            <Link
+              className='bg-purple-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-500 transition-colors'
+              to="/admin/details">
+              Details
+            </Link>
+          </div>
         </div>
 
 
