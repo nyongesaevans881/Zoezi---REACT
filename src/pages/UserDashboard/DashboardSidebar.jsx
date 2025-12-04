@@ -130,7 +130,7 @@ const getNavItems = () => {
         <div className="mb-8 pb-8 border-b border-brand-gold">
           <div className="flex items-center gap-4">
             <img
-              src={userData?.profilePicture.url || '/placeholder-profile.jpg'}
+              src={userData?.profilePicture.url || userData?.profilePicture || '/placeholder-profile.jpg'}
               alt={`${userData?.firstName} ${userData?.lastName}`}
               className="w-16 h-16 rounded-full border-3 border-brand-gold object-cover flex-shrink-0"
             />

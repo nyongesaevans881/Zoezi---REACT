@@ -84,7 +84,7 @@ const TopNav = () => {
                     </span>
                   </div>
                   <img 
-                    src={user.profilePicture?.url || '/placeholder-profile.jpg'}
+                    src={user.profilePicture?.url || user.profilePicture || '/placeholder-profile.jpg'}
                     alt="Profile"
                     className="h-8 w-8 rounded-full border-2 border-brand-gold"
                   />

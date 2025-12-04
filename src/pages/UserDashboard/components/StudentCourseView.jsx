@@ -345,7 +345,7 @@ const StudentCourseView = ({ userData, courseId }) => {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div
-            className="bg-gradient-to-r from-brand-gold to-accent-orange h-3 rounded-full transition-all duration-500"
+            className="bg-gradient-to-r from-primary-gold to-accent-orange h-3 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -713,7 +713,7 @@ const StudentCourseView = ({ userData, courseId }) => {
                           <button
                             onClick={() => handleSubmitResponse(item._id)}
                             disabled={submitting}
-                            className="w-full px-4 py-2 bg-gradient-to-r from-brand-gold to-accent-orange text-white font-semibold rounded-lg hover:shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-2 bg-gradient-to-r from-primary-gold to-accent-orange text-white font-semibold rounded-lg hover:shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {submitting ? 'Submitting...' : 'Submit Response'}
                           </button>
