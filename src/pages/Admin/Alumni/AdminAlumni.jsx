@@ -13,6 +13,7 @@ export default function AdminAlumni() {
   const [selectedAlumnus, setSelectedAlumnus] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [pagination, setPagination] = useState({ total: 0, limit: 50, skip: 0 });
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     fetchAlumni();
@@ -43,6 +44,39 @@ export default function AdminAlumni() {
       setLoading(false);
     }
   };
+
+
+  const handleDelete = async (id) => {
+    setDeletingId(id);
+    try {
+      const response = await fetch(`${API_BASE_URL}/alumni/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete alumni');
+      }
+
+      // Remove deleted alumni from state
+      setAlumni(alumni.filter(alumnus => alumnus._id !== id));
+
+      // Update pagination total
+      setPagination(prev => ({
+        ...prev,
+        total: prev.total - 1
+      }));
+
+      toast.success('Alumni deleted successfully');
+    } catch (error) {
+      console.error('Delete alumni error:', error);
+      toast.error(error.message || 'Failed to delete alumni');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -166,13 +200,32 @@ export default function AdminAlumni() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-center">
-                            <button
-                              onClick={() => handleViewDetails(alumnus)}
-                              className="px-4 py-1 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white cursor-pointer"
-                            >
-                              <LuScanEye />
-                              View
-                            </button>
+                            <div className="flex justify-center gap-2">
+                              <button
+                                onClick={() => handleViewDetails(alumnus)}
+                                className="px-4 py-1 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white cursor-pointer"
+                              >
+                                <LuScanEye />
+                                View
+                              </button>
+                              <button
+                                onClick={() => handleDelete(alumnus._id)}
+                                disabled={deletingId === alumnus._id}
+                                className="px-4 py-1 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 text-red-600 border border-red-600 hover:bg-red-600 hover:text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {deletingId === alumnus._id ? (
+                                  <>
+                                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    Deleting...
+                                  </>
+                                ) : (
+                                  'Delete'
+                                )}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

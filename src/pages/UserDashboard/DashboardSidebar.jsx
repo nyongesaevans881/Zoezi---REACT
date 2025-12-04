@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TbTableImport } from 'react-icons/tb'
 import { MdDashboard } from "react-icons/md";
+import { GrResources } from "react-icons/gr";
 
 export default function DashboardSidebar({ userData, onLogout, userType }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -90,6 +91,7 @@ const getNavItems = () => {
       { icon: FaUsers, label: 'My Students', id: 'mystudents' },
       { icon: FaSwatchbook, label: 'Curriculum', id: 'curriculum' },
       { icon: TbTableImport, label: 'Timetables', id: 'groupcurriculum' },
+      { icon: GrResources, label: 'Resources', id: 'resources' },
       { icon: FaGraduationCap, label: 'Certification', id: 'certification' },
       { icon: FaMoneyBillWave, label: 'Settlements', id: 'settlements' },
       { icon: FaCog, label: 'Settings', id: 'settings' }
@@ -130,7 +132,7 @@ const getNavItems = () => {
         <div className="mb-8 pb-8 border-b border-brand-gold">
           <div className="flex items-center gap-4">
             <img
-              src={userData?.profilePicture.url || userData?.profilePicture || '/placeholder-profile.jpg'}
+              src={userData?.profilePicture?.url || userData?.profilePicture || '/placeholder-profile.jpg'}
               alt={`${userData?.firstName} ${userData?.lastName}`}
               className="w-16 h-16 rounded-full border-3 border-brand-gold object-cover flex-shrink-0"
             />
