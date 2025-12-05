@@ -53,7 +53,7 @@ export default function WhoWeAre() {
             </div>
             <div style={{ flex: 1, minWidth: "300px" }}>
               <img
-                src="/gallery/1.jpg"
+                src="/hero.jpg"
                 alt="NZI Training Facility"
                 style={{ borderRadius: "12px", width: "100%", maxWidth: "400px" }}
               />

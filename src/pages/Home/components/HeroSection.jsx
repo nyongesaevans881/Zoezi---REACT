@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import { FaSearch } from "react-icons/fa"
 import "./HeroSection.css"
+import { PiBooksDuotone } from "react-icons/pi";
 
 export default function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -36,6 +37,15 @@ export default function HeroSection() {
           <p className="hero-description">
             Transform your passion for fitness into a professional career with our NITA-accredited certification program
           </p>
+          {/* add enroll an online course now action button */}
+          <motion.button
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-md mt-4 font-semibold hover:bg-yellow-600 flex items-center gap-2 mx-auto cursor-pointer"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate("/login")}
+          >
+            📚 Enroll in Online Course 🎓
+          </motion.button>
         </motion.div>
 
         <motion.form

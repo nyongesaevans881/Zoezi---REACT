@@ -21,7 +21,7 @@ export default function Home() {
       <section className="section about-preview">
         <div className="container">
           <div className="section-header">
-            <p className="text-4xl font-bold border-b-2 border-[#d4a644] w-fit mx-auto pb-2 mb-2 max-md:text-xl">Welcome to Zoezi Institute</p>
+            <p className="text-4xl font-bold border-b-2 border-[#d4a644] w-fit mx-auto pb-2 mb-2 max-md:text-xl">Welcome to Nairobi Zoezi Institute</p>
             <p className="section-subtitle">Excellence in Fitness and Wellness Education</p>
           </div>
 

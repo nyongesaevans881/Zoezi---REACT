@@ -47,7 +47,7 @@ export default function CoursesSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-primary-dark mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold text-primary-dark mb-4">
             Our Popular Courses
           </h2>
           <div className="w-24 h-1 bg-brand-gold mx-auto mb-4"></div>
@@ -82,7 +82,7 @@ export default function CoursesSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {courses.map((course, idx) => (
               <CourseCard

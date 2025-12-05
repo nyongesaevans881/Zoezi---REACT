@@ -44,7 +44,8 @@ export default function AdminCourses() {
   // Course type options
   const courseTypeOptions = [
     { value: 'online', label: 'Online' },
-    { value: 'native', label: 'Native' }
+    { value: 'physical', label: 'Physical' },
+    { value: 'both', label: 'Physical & Online' }
   ];
 
   // Course tier options
@@ -305,7 +306,6 @@ export default function AdminCourses() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || 'Failed to fetch tutors');
       setTutorsList(json.data?.tutors || []);
-      // if assignCourseId set, preselect tutors for that course
       if (assignCourseId) {
         const course = courses.find(c => c._id === assignCourseId);
         const courseTutorIds = (course?.tutors || []).map(t => (typeof t === 'string' ? t : (t._id || t)));

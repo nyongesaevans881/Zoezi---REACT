@@ -13,7 +13,7 @@ export default function Footer() {
           <div className="footer-section">
             <div className="footer-logo">
               <span className="footer-logo-text">ZOEZI</span>
-              <span className="footer-logo-subtext">INSTITUTE</span>
+              <span className="footer-logo-subtext">SCHOOL</span>
             </div>
             <p>
               Excellence in fitness and wellness education. Transforming careers, building professionals, shaping the
@@ -88,7 +88,7 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="footer-bottom">
-          <p>&copy; {currentYear} Nairobi Zoezi Institute. All rights reserved.</p>
+          <p>&copy; {currentYear} Nairobi Zoezi SCHOOL. All rights reserved.</p>
           <p>
             NITA Accreditation: <strong>NITA/TRN/1553</strong>
           </p>
