@@ -45,13 +45,12 @@ export default function CoursesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-6"
         >
           <h2 className="text-3xl md:text-5xl font-bold text-primary-dark mb-4">
             Our Popular Courses
           </h2>
-          <div className="w-24 h-1 bg-brand-gold mx-auto mb-4"></div>
-
+          <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-400 mx-auto"></div>
         </motion.div>
 
         {/* Loading State */}
@@ -116,7 +115,7 @@ export default function CoursesSection() {
             className="text-center mt-12"
           >
             <Link
-              to="/courses"
+              to="/what-we-do"
               className="inline-flex items-center gap-2 px-8 py-3 border-2 border-brand-gold text-brand-gold rounded-lg font-semibold hover:bg-brand-gold hover:text-white transition-all duration-200 group"
             >
               Explore All {courses.length}+ Courses

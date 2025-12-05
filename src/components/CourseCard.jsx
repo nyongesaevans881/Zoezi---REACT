@@ -1,6 +1,6 @@
 // components/CourseCard.jsx
 import { motion } from "framer-motion"
-import { FaRegCheckCircle } from "react-icons/fa"
+import { FaRegCheckCircle, FaStar } from "react-icons/fa"
 import { Link } from "react-router-dom"
 
 export default function CourseCard({ course, index = 0, showAllDetails = true }) {
@@ -24,7 +24,8 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       viewport={{ once: true }}
-      className="bg-white rounded-lg border-2 border-gray-300 hover:border-brand-gold shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group h-full flex flex-col"
+      // change border to purple if online course
+      className={`bg-white rounded-lg border-2 border-gray-300 hover:border-brand-gold shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group h-full flex flex-col ${course.courseType === "online" ? "border-purple-400" : ""}`}
     >
       {/* Course Image */}
       {course.coverImage?.url && (
@@ -38,7 +39,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
           {/* Diagonal Ribbon for course type */}
           <div className="absolute top-10 -left-5 w-24">
             <div className={`absolute transform -translate-x-6 -translate-y-6 -rotate-45 w-32 h-4 flex items-center justify-center ${
-              course.courseType === "online" ? "bg-green-500" : "bg-blue-500"
+              course.courseType === "online" ? "bg-purple-500" : "bg-blue-500"
             }`}>
               <span className="text-white text-[10px] font-semibold flex items-center gap-1">
                 <FaRegCheckCircle />
@@ -56,7 +57,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
 
           {/* Course tier badge for online courses */}
           {course.courseType === "online" && course.courseTier && (
-            <span className="absolute bottom-0 left-0 px-3 py-1 bg-blue-400 text-white text-xs font-semibold">
+            <span className="absolute bottom-0 left-0 px-3 py-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold">
               <p className="capitalize font-bold">{course.courseTier}</p>
             </span>
           )}
@@ -67,6 +68,14 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
       <div className="p-6 flex-1 flex flex-col">
         {/* Course Name */}
         <h3 className="text-xl font-bold text-primary-dark mb-2 line-clamp-2">
+          {course.courseType === "online" && (
+            <div className="flex text-yellow-300">
+              <FaStar size={10}/>
+              <FaStar size={10}/>
+              <FaStar size={10}/>
+              <FaStar size={10}/>
+            </div>
+          )}
           {course.name}
         </h3>
 
@@ -110,7 +119,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
         {course.courseType === "online" ? (
           <Link
             to="/login"
-            className="bg-brand-gold text-white py-3 px-8 rounded-lg font-semibold hover:bg-brand-gold/90 transition-all duration-200 w-full block text-center mt-auto"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-8 rounded-lg font-semibold hover:bg-brand-gold/90 transition-all duration-200 w-full block text-center mt-auto"
           >
             Enroll Now
           </Link>

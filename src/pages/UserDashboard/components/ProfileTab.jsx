@@ -123,7 +123,7 @@ export default function ProfileTab({ userData, isEditing, setIsEditing, editData
             <label className="block text-sm font-semibold mb-3" style={{ color: 'var(--color-primary-dark)' }}>Profile Picture</label>
             <div className="flex flex-col items-center gap-3 sm:gap-4">
               <img
-                src={editData.profilePicture.url || '/placeholder-profile.jpg'}
+                src={editData.profilePicture?.url || '/placeholder-profile.jpg'}
                 alt="Profile"
                 className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg object-cover border-2"
                 style={{ borderColor: 'var(--color-primary-gold)' }}
@@ -270,7 +270,7 @@ export default function ProfileTab({ userData, isEditing, setIsEditing, editData
         {/* Profile Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 pb-4 sm:pb-6 border-b" style={{ borderColor: 'var(--color-text-light)' }}>
           <img
-            src={userData.profilePicture.url || '/placeholder-profile.jpg'}
+            src={userData.profilePicture?.url || '/placeholder-profile.jpg'}
             alt="Profile"
             className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg object-cover border-3 max-md:mx-auto"
             style={{ borderColor: 'var(--color-primary-gold)' }}

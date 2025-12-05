@@ -4,13 +4,30 @@ import { FaSearch, FaMapMarkerAlt, FaPhone, FaEnvelope, FaArrowRight } from "rea
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { LiaCertificateSolid } from "react-icons/lia";
 import { FaUserGraduate } from "react-icons/fa6";
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { PiStudent } from "react-icons/pi";
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
 import "./SearchMembers.css"
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL
+
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+    
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+  
+  return debouncedValue
+}
 
 export default function SearchMembers() {
   const [searchParams] = useSearchParams()
@@ -21,26 +38,58 @@ export default function SearchMembers() {
   const [isSearching, setIsSearching] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true)
+  const [suggestions, setSuggestions] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const suggestionsRef = useRef(null)
+  const initialLoadComplete = useRef(false)
 
-  // Load all profiles on mount
+  // Load all profiles on mount (only once)
   useEffect(() => {
-    loadAllProfiles()
+    if (!initialLoadComplete.current) {
+      loadAllProfiles()
+      initialLoadComplete.current = true
+    }
   }, [])
 
-  // Auto-search if query param exists
+  // Auto-search if query param exists on initial load
   useEffect(() => {
-    if (searchParams.get("q")) {
-      handleSearch(null)
+    if (searchParams.get("q") && allProfiles.length > 0 && !hasSearched) {
+      handleSearch(null, true)
     }
-  }, [searchParams])
+  }, [searchParams, allProfiles, hasSearched])
+
+  // Debounced search for autocomplete
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
+
+  // Fetch autocomplete suggestions
+  useEffect(() => {
+    if (debouncedSearchQuery.trim().length >= 2) {
+      fetchAutocompleteSuggestions(debouncedSearchQuery)
+    } else {
+      setSuggestions([])
+    }
+  }, [debouncedSearchQuery])
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        setShowSuggestions(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const loadAllProfiles = async () => {
     try {
       setIsLoadingProfiles(true)
       const response = await fetch(`${API_BASE_URL}/students/public/all`)
       const data = await response.json()
-      console.log("Load profiles response:", data);
-
+      
       if (response.ok) {
         setAllProfiles(data.data.profiles || [])
       } else {
@@ -54,15 +103,33 @@ export default function SearchMembers() {
     }
   }
 
-  const handleSearch = async (e) => {
+  const fetchAutocompleteSuggestions = async (query) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/students/public/autocomplete?q=${encodeURIComponent(query)}&limit=5`)
+      const data = await response.json()
+      
+      if (response.ok) {
+        setSuggestions(data.data.suggestions || [])
+      }
+    } catch (error) {
+      console.error("Autocomplete error:", error)
+    }
+  }
+
+  const handleSearch = async (e, fromParam = false) => {
     if (e) e.preventDefault()
+    
+    // If empty query, show all profiles
     if (!searchQuery.trim()) {
-      toast.error("Please enter a search query")
+      setHasSearched(false)
+      setSearchResults([])
+      setShowSuggestions(false)
       return
     }
 
     setIsSearching(true)
     setHasSearched(true)
+    setShowSuggestions(false)
 
     try {
       const response = await fetch(`${API_BASE_URL}/students/public/search?q=${encodeURIComponent(searchQuery)}`)
@@ -71,7 +138,9 @@ export default function SearchMembers() {
       if (response.ok) {
         setSearchResults(data.data.results || [])
         if (data.data.results.length === 0) {
-          toast.error(`No members found matching "${searchQuery}"`)
+          toast.error(`No members found matching "${searchQuery}"`, {
+            duration: 3000
+          })
         }
       } else {
         throw new Error(data.message || "Search failed")
@@ -85,46 +154,39 @@ export default function SearchMembers() {
     }
   }
 
-  const getStatusBadgeColor = (status) => {
-    if (status === 'active') return '#2b8a3e'
-    if (status === 'alumni') return '#1976d2'
-    if (status === 'on_leave') return '#f57c00'
-    return '#666666'
+  const handleSuggestionClick = (suggestion) => {
+    setSearchQuery(suggestion.name)
+    setShowSuggestions(false)
+    // Trigger search with the selected suggestion
+    setTimeout(() => {
+      handleSearch(null)
+    }, 100)
   }
 
-  const getStatusLabel = (status) => {
-    if (status === 'active')
-      return <>
-        <PiStudent className="inline-block mr-1" />
-        Current Student
-      </>
-
-    if (status === 'alumni')
-      return (
-        <>
-          <FaUserGraduate className="inline-block mr-1" />
-          Certified Professional
-        </>
-      )
-
-    if (status === 'on_leave')
-      return <>⏸️ On Leave</>
-
-    return status
+  const handleInputChange = (e) => {
+    const value = e.target.value
+    setSearchQuery(value)
+    setShowSuggestions(value.trim().length >= 2)
   }
 
-  const formatDate = (date) => {
-    if (!date) return 'N/A'
-    return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch(e)
+      setShowSuggestions(false)
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false)
+    }
   }
 
-  const ProfileCard = ({ profile, isAlumni }) => (
+  // Use memoization to prevent unnecessary re-renders
+  const ProfileCard = useCallback(({ profile, isAlumni }) => (
     <motion.div
       className="profile-card"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
+      key={`${profile.admissionNumber}-${profile._id}`}
     >
       {/* Certified Professional Ribbon */}
       {profile.verified ? (
@@ -200,13 +262,36 @@ export default function SearchMembers() {
         </button>
       </div>
     </motion.div>
-  )
+  ), [navigate])
+
+  // Memoize the results to prevent unnecessary re-renders
+  const displayedProfiles = useMemo(() => {
+    if (hasSearched && !isSearching) {
+      return searchResults
+    }
+    return allProfiles
+  }, [hasSearched, isSearching, searchResults, allProfiles])
+
+  const displayCount = useMemo(() => {
+    if (hasSearched && !isSearching) {
+      return searchResults.length
+    }
+    return allProfiles.length
+  }, [hasSearched, isSearching, searchResults.length, allProfiles.length])
+
+  const shouldShowAllProfiles = useMemo(() => {
+    return !hasSearched && !isLoadingProfiles && allProfiles.length > 0
+  }, [hasSearched, isLoadingProfiles, allProfiles.length])
+
+  const shouldShowNoResults = useMemo(() => {
+    return hasSearched && !isSearching && searchResults.length === 0
+  }, [hasSearched, isSearching, searchResults.length])
 
   return (
     <div className="page search-members-page">
-      <div className="container">
+      <div className="p-2 md:p-4 lg:p-8">
         <div className="mx-auto text-center mb-2">
-          <p className="section-subtitle">Search and verify Zoezi Students and Alumni</p>
+          <p className="text-primary-gold">Search and verify Zoezi Students and Alumni</p>
         </div>
 
         {/* Search Form */}
@@ -217,7 +302,7 @@ export default function SearchMembers() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="search-wrapper">
+          <div className="search-wrapper relative" ref={suggestionsRef}>
             <div className="flex items-center gap-2">
               <FaSearch className="search-icon" />
               <input
@@ -225,73 +310,144 @@ export default function SearchMembers() {
                 placeholder="Search by name, ID, email, or phone..."
                 className="search-input"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onFocus={() => searchQuery.trim().length >= 2 && setShowSuggestions(true)}
               />
             </div>
             <button type="submit" className="search-btn" disabled={isSearching}>
               {isSearching ? "Searching..." : "Search"}
             </button>
+
+            {/* Autocomplete Suggestions */}
+            <AnimatePresence>
+              {showSuggestions && suggestions.length > 0 && (
+                <motion.div
+                  className="suggestions-dropdown"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {suggestions.map((suggestion, index) => (
+                    <div
+                      key={`${suggestion.email}-${index}`}
+                      className="suggestion-item"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      <div className="suggestion-name">{suggestion.display}</div>
+                      <div className="suggestion-type">
+                        <span className={`suggestion-type-badge ${suggestion.type.toLowerCase()}`}>
+                          {suggestion.type}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          
+          {/* Search Tips */}
+          <div className="search-tips">
+            <p className="text-sm text-gray-600 mt-2">
+              Tip: Try searching by <strong>full name</strong>, <strong>partial name</strong>, 
+              <strong> email</strong>, <strong>phone</strong>, or <strong>admission number</strong>
+            </p>
           </div>
         </motion.form>
 
-        {/* Results */}
+        {/* Results Section - FIXED: Minimize re-renders */}
         <div className="search-results">
-          {isSearching && (
-            <motion.div className="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div className="spinner"></div>
-              <p>Searching...</p>
-            </motion.div>
-          )}
+          {/* Loading State */}
+          <AnimatePresence mode="wait">
+            {isSearching && (
+              <motion.div
+                key="loading"
+                className="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="spinner"></div>
+                <p>Searching...</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {hasSearched && !isSearching && searchResults.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-              <p className="results-count">Found {searchResults.length} member(s)</p>
-              <div className="results-grid">
-                {searchResults.map((result, index) => (
-                  <ProfileCard
-                    key={`${result.admissionNumber}-${index}`}
-                    profile={result}
-                    isAlumni={result.status === 'alumni'}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          )}
+          {/* Search Results */}
+          <AnimatePresence mode="wait">
+            {!isSearching && displayedProfiles.length > 0 && (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p className="results-count">
+                  {hasSearched ? `Found ${displayCount} member(s)` : `All Members (${displayCount})`}
+                </p>
+                <div className="results-grid">
+                  {displayedProfiles.map((profile) => (
+                    <ProfileCard
+                      key={`${profile.admissionNumber}-${profile._id}`}
+                      profile={profile}
+                      isAlumni={profile.status === 'alumni'}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {hasSearched && !isSearching && searchResults.length === 0 && (
-            <motion.div className="no-results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <p>No members found matching "{searchQuery}"</p>
-              <p className="no-results-hint">Try searching with a different name, ID, email, or phone number</p>
-            </motion.div>
-          )}
+          {/* No Results */}
+          <AnimatePresence>
+            {shouldShowNoResults && (
+              <motion.div
+                className="no-results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p>No members found matching "{searchQuery}"</p>
+                <p className="no-results-hint">Try searching with a different name, ID, email, or phone number</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {!hasSearched && !isLoadingProfiles && allProfiles.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-              <p className="results-count">All Members ({allProfiles.length})</p>
-              <div className="results-grid">
-                {allProfiles.map((profile, index) => (
-                  <ProfileCard
-                    key={`${profile.admissionNumber}-${index}`}
-                    profile={profile}
-                    isAlumni={profile.status === 'alumni'}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          )}
+          {/* Initial State - All Profiles */}
+          <AnimatePresence>
+            {shouldShowAllProfiles && displayedProfiles.length === 0 && (
+              <motion.div
+                className="search-hint"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p>No members available. Use the search bar to find student and professional credentials</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {!hasSearched && !isLoadingProfiles && allProfiles.length === 0 && (
-            <motion.div className="search-hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <p>No members available. Use the search bar to find student and professional credentials</p>
-            </motion.div>
-          )}
-
-          {isLoadingProfiles && (
-            <motion.div className="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div className="spinner"></div>
-              <p>Loading profiles...</p>
-            </motion.div>
-          )}
+          {/* Initial Loading */}
+          <AnimatePresence>
+            {isLoadingProfiles && !hasSearched && (
+              <motion.div
+                className="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="spinner"></div>
+                <p>Loading profiles...</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

@@ -18,7 +18,7 @@ export default function Home() {
       <CoursesSection />
 
       {/* About Preview Section */}
-      <section className="section about-preview">
+      <section className="about-preview pb-10">
         <div className="container">
           <div className="section-header">
             <p className="text-4xl font-bold border-b-2 border-[#d4a644] w-fit mx-auto pb-2 mb-2 max-md:text-xl">Welcome to Nairobi Zoezi Institute</p>
