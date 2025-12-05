@@ -88,72 +88,8 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
 
   const openEnroll = (course) => {
     setSelectedCourse(course)
-    
-    // Check if course is free (amount is 0 or undefined/null)
-    const courseAmount = course.offerPrice || course.courseFee || 0;
-    
-    if (courseAmount === 0) {
-      // If free, directly enroll without showing M-Pesa modal
-      handleFreeEnrollment(course);
-    } else {
-      // If paid, show the M-Pesa modal
-      setShowModal(true);
-    }
+    setShowModal(true)
   }
-
-  const handleFreeEnrollment = async (course) => {
-    try {
-      // Create fake payment data for free courses
-      const fakePaymentData = {
-        amount: 0,
-        transactionId: `FREE-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        checkoutRequestId: `FREE-${Date.now()}`,
-        phone: userData?.phone || "0712345678", // Use user's phone or default
-        timeOfPayment: new Date().toISOString(),
-        status: "PAID" // Mark as paid even though it's free
-      };
-
-      const res = await fetch(`${API_BASE}/users/enroll`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          userId: userData._id,
-          courseId: course._id,
-          paymentData: fakePaymentData,
-          userType: userType,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Enrollment failed');
-
-      // Refresh user data FIRST - this updates the sidebar
-      if (refreshUserData) {
-        const updatedUser = await refreshUserData();
-
-        if (updatedUser?.courses) {
-          // Update the enrolled state with refreshed courses
-          setEnrolled(updatedUser.courses);
-
-          // Now fetch fresh available courses with the updated enrolled state
-          await fetchAvailableCourses();
-        }
-      } else {
-        // Fallback: refresh both lists
-        await fetchEnrolledCourses();
-        await fetchAvailableCourses();
-      }
-
-      toast.success('Enrolled successfully in free course!');
-
-    } catch (err) {
-      console.error('Free enrollment error:', err);
-      toast.error('Enrollment failed: ' + err.message);
-    }
-  };
 
   const handleEnrollSuccess = () => {
     fetchEnrolledCourses();
@@ -161,6 +97,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
   }
 
   const handlePaymentSuccess = async (paymentData) => {
+
     try {
       const res = await fetch(`${API_BASE}/users/enroll`, {
         method: 'POST',
@@ -206,33 +143,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
     }
   };
 
-  // Helper function to format course price display
-  const formatCoursePrice = (course) => {
-    const courseAmount = course.offerPrice || course.courseFee || 0;
-    
-    if (courseAmount === 0) {
-      return <span className="font-bold text-green-600">FREE</span>;
-    }
-    
-    if (course.offerPrice && course.offerPrice < course.courseFee) {
-      return (
-        <>
-          <span className="line-through text-light text-xs">KES {course.courseFee?.toLocaleString()}</span>
-          <span className="font-bold text-brand-gold ml-2">KES {course.offerPrice?.toLocaleString()}</span>
-        </>
-      );
-    }
-    
-    return <span className="font-bold text-brand-gold">KES {courseAmount?.toLocaleString()}</span>;
-  };
 
-  // Helper function to format enrolled course payment amount
-  const formatPaymentAmount = (amount) => {
-    if (amount === 0 || amount === '0') {
-      return <span className="font-semibold text-green-600">FREE</span>;
-    }
-    return <span className="font-semibold">KES {amount?.toLocaleString() || 'N/A'}</span>;
-  };
 
   return (
     <div className="space-y-8">
@@ -285,7 +196,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
                       <div className="space-y-1 text-xs">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Amount:</span>
-                          {formatPaymentAmount(paymentData.amount)}
+                          <span className="font-semibold">KES {paymentData.amount?.toLocaleString() || 'N/A'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Phone:</span>
@@ -371,72 +282,63 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
           </div>
         ) : available && available.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {available.map((course) => {
-              const courseAmount = course.offerPrice || course.courseFee || 0;
-              const isFree = courseAmount === 0;
-              
-              return (
-                <div
-                  key={course._id}
-                  className="border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-brand-gold transition-all duration-300 bg-white flex flex-col"
-                >
-                  {/* Course Image */}
-                  <div className="h-48 bg-gray-200 relative overflow-hidden">
-                    {course.coverImage?.url ? (
-                      <img
-                        src={course.coverImage.url}
-                        alt={course.name}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-brand-gold to-brand-yellow flex items-center justify-center">
-                        <FaBook className="text-white text-5xl opacity-80" />
-                      </div>
-                    )}
-                    <div className="absolute top-3 right-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${isFree ? 'bg-green-500 text-white' : 'bg-brand-gold text-white'}`}>
-                        {isFree ? 'FREE' : 'Online'}
-                      </span>
+            {available.map((course) => (
+              <div
+                key={course._id}
+                className="border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-brand-gold transition-all duration-300 bg-white flex flex-col"
+              >
+                {/* Course Image */}
+                <div className="h-48 bg-gray-200 relative overflow-hidden">
+                  {course.coverImage?.url ? (
+                    <img
+                      src={course.coverImage.url}
+                      alt={course.name}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-brand-gold to-brand-yellow flex items-center justify-center">
+                      <FaBook className="text-white text-5xl opacity-80" />
                     </div>
-                    {isFree && (
-                      <div className="absolute top-3 left-3">
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300">
-                          FREE COURSE
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Course Info */}
-                  <div className="p-4 flex-1 flex flex-col">
-                    <h5 className="font-bold text-lg text-primary mb-2 line-clamp-2">{course.name}</h5>
-                    <p className="text-sm text-secondary mb-3 line-clamp-2">{course.description}</p>
-
-                    <div className="flex items-center justify-between text-sm text-secondary mb-3 mt-auto">
-                      <div className="flex items-center gap-1">
-                        <FaClock className="text-brand-gold" />
-                        <span>{course.duration} {course.durationType}</span>
-                      </div>
-                      <div className="text-right">
-                        {formatCoursePrice(course)}
-                      </div>
-                    </div>
-
-                    {/* Action Button */}
-                    <button
-                      onClick={() => openEnroll(course)}
-                      className={`w-full px-4 py-2 rounded-lg font-semibold transition-colors border-2 mt-4 cursor-pointer ${
-                        isFree 
-                          ? 'bg-green-500 text-white border-green-500 hover:bg-green-600' 
-                          : 'bg-brand-gold text-white border-brand-gold hover:bg-brand-yellow'
-                      }`}
-                    >
-                      {isFree ? 'Enroll for FREE' : 'Enroll Now'}
-                    </button>
+                  )}
+                  <div className="absolute top-3 right-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-brand-gold text-white">
+                      Online
+                    </span>
                   </div>
                 </div>
-              );
-            })}
+
+                {/* Course Info */}
+                <div className="p-4 flex-1 flex flex-col">
+                  <h5 className="font-bold text-lg text-primary mb-2 line-clamp-2">{course.name}</h5>
+                  <p className="text-sm text-secondary mb-3 line-clamp-2">{course.description}</p>
+
+                  <div className="flex items-center justify-between text-sm text-secondary mb-3 mt-auto">
+                    <div className="flex items-center gap-1">
+                      <FaClock className="text-brand-gold" />
+                      <span>{course.duration} {course.durationType}</span>
+                    </div>
+                    <div className="text-right">
+                      {course.offerPrice ? (
+                        <>
+                          <span className="line-through text-light text-xs">KES {course.courseFee?.toLocaleString()}</span>
+                          <span className="font-bold text-brand-gold ml-2">KES {course.offerPrice?.toLocaleString()}</span>
+                        </>
+                      ) : (
+                        <span className="font-bold text-brand-gold">KES {course.courseFee?.toLocaleString()}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <button
+                    onClick={() => openEnroll(course)}
+                    className="w-full px-4 py-2 rounded-lg font-semibold transition-colors bg-brand-gold text-white hover:bg-brand-yellow border-2 border-brand-gold mt-4 cursor-pointer"
+                  >
+                    Enroll Now
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="bg-white border-2 border-gray-200 rounded-xl p-8 text-center">

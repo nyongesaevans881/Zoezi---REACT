@@ -395,7 +395,7 @@ const StudentCertifications = ({ userData }) => {
                 </div>
                 <div className="flex justify-between items-center font-bold">
                   <span className="text-sm font-semibold text-gray-700">Amount</span>
-                  Ksh {course.payment.amount}
+                  Ksh {course.payment.amount.toLocaleString()}
                 </div>
                 </div>
 

@@ -171,7 +171,7 @@ const handleLogin = async (e) => {
                 <button type="submit" className="w-full py-3 rounded-lg font-bold text-lg bg-brand-gold text-white hover:bg-brand-gold/90 transition-all disabled:opacity-50 cursor-pointer" disabled={loginLoading}>
                   {loginLoading ? 'Logging in...' : 'Login'}
                 </button>
-                <div className="flex justify-between mt-2">
+                <div className="flex justify-between mt-2 max-md:flex-col max-md:gap-2">
                   <button type="button" className="text-brand-gold font-semibold cursor-pointer" onClick={() => setShowRegister(true)}>
                     Create Student Account
                   </button>

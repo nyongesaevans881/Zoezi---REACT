@@ -351,7 +351,7 @@ export default function SearchMembers() {
           {/* Search Tips */}
           <div className="search-tips">
             <p className="text-sm text-gray-600 mt-2">
-              Tip: Try searching by <strong>full name</strong>, <strong>partial name</strong>, 
+              Tip: Try searching by <strong>first name</strong>, <strong>last name</strong>, 
               <strong> email</strong>, <strong>phone</strong>, or <strong>admission number</strong>
             </p>
           </div>
