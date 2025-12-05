@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { FaEdit, FaSave, FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaSave, FaTimes, FaPlus, FaTrash, FaEye } from 'react-icons/fa';
 import { CiSearch } from "react-icons/ci";
 import AdminLayout from '../AdminLayout/AdminLayout';
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -17,21 +17,29 @@ const GRADE_OPTIONS = [
 ];
 
 const SECTIONS = {
-    personal: 'Personal Information',
-    contact: 'Contact Information',
-    academic: 'Academic Information',
+    info: 'Information',
+    personal: 'Personal Details',
+    academic: 'Academic Details',
+    financial: 'Financial Details',
     profile: 'Profile Picture',
-    financial: 'Financial Information',
-    exams: 'Exam Information',
+    exams: 'Exam Results',
     cpd: 'CPD Records'
 };
 
+const ITEMS_PER_PAGE = 50;
+
 export default function AdminDetails() {
-    const [searchType, setSearchType] = useState('student'); // 'student' or 'alumni'
-    const [searchQuery, setSearchQuery] = useState('');
-    const [profile, setProfile] = useState(null);
+    const [dataType, setDataType] = useState('students'); // 'students' or 'alumni'
+    const [students, setStudents] = useState([]);
+    const [filteredStudents, setFilteredStudents] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [editingSection, setEditingSection] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    
+    // Modal states
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [activeTab, setActiveTab] = useState('info');
     const [editData, setEditData] = useState({});
     const [saving, setSaving] = useState(false);
     const [profileImageFile, setProfileImageFile] = useState(null);
@@ -44,19 +52,34 @@ export default function AdminDetails() {
     const [newCpdScore, setNewCpdScore] = useState('');
     const [newCpdRemarks, setNewCpdRemarks] = useState('');
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
-        if (!searchQuery.trim()) {
-            toast.error('Please enter a search query');
-            return;
-        }
+    // Fetch all data on component mount and when dataType changes
+    useEffect(() => {
+        fetchAllData();
+    }, [dataType]);
 
+    // Filter students when search query changes
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
+            setFilteredStudents(students);
+        } else {
+            const filtered = students.filter(student => 
+                student.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                student.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                student.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                student.phone?.includes(searchQuery) ||
+                student.admissionNumber?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredStudents(filtered);
+        }
+        setCurrentPage(1); // Reset to first page on search
+    }, [searchQuery, students]);
+
+    const fetchAllData = async () => {
         setLoading(true);
         try {
-            const endpoint = searchType === 'student' ? '/students' : '/alumni/list';
+            const endpoint = dataType === 'students' ? '/students' : '/alumni/list';
             const query = new URLSearchParams({
-                search: searchQuery,
-                limit: 100,
+                limit: 1000,
                 skip: 0
             });
 
@@ -64,75 +87,63 @@ export default function AdminDetails() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Search failed');
+                throw new Error(data.message || 'Failed to fetch data');
             }
 
-            const results = searchType === 'student' ? data.data.students : data.data.alumni;
-
-            if (results.length === 0) {
-                toast.error('No results found');
-                setProfile(null);
-            } else if (results.length === 1) {
-                setProfile(results[0]);
-                toast.success('Profile loaded!');
-            } else {
-                // If multiple results, show first one and notify
-                setProfile(results[0]);
-                toast.success(`Found ${results.length} matches. Showing first result.`);
-            }
+            const results = dataType === 'students' ? data.data.students : data.data.alumni;
+            setStudents(results || []);
+            setFilteredStudents(results || []);
+            toast.success(`Loaded ${results.length} ${dataType}`);
         } catch (error) {
-            console.error('Search error:', error);
-            toast.error(error.message || 'Search failed');
+            console.error('Fetch error:', error);
+            toast.error(error.message || 'Failed to load data');
         } finally {
             setLoading(false);
         }
     };
 
-    const startEditing = (section) => {
-        setEditingSection(section);
-        // Initialize edit data based on section
-        const sectionData = getSectionData(section);
-        setEditData(sectionData);
-        setProfileImagePreview(profile.profilePicture);
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredStudents.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedStudents = filteredStudents.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    const openEditModal = (student) => {
+        setSelectedStudent(student);
+        setEditData({
+            // Info tab
+            admissionNumber: student.admissionNumber,
+            // Personal tab
+            firstName: student.firstName,
+            lastName: student.lastName,
+            dateOfBirth: student.dateOfBirth,
+            gender: student.gender,
+            // Contact info
+            email: student.email,
+            phone: student.phone,
+            // Academic tab
+            qualification: student.qualification,
+            course: student.course,
+            trainingMode: student.trainingMode,
+            courseDuration: student.courseDuration,
+            // Financial tab
+            courseFee: student.courseFee,
+            upfrontFee: student.upfrontFee,
+            // Exams tab
+            exams: (student.exams && Array.isArray(student.exams)) ? student.exams : [],
+            // CPD tab
+            cpdRecords: (student.cpdRecords && Array.isArray(student.cpdRecords)) ? student.cpdRecords : []
+        });
+        setProfileImagePreview(student.profilePicture);
+        setActiveTab('info');
+        setIsModalOpen(true);
     };
 
-    const getSectionData = (section) => {
-        switch (section) {
-            case 'personal':
-                return {
-                    firstName: profile.firstName,
-                    lastName: profile.lastName,
-                    dateOfBirth: profile.dateOfBirth,
-                    gender: profile.gender
-                };
-            case 'contact':
-                return {
-                    email: profile.email,
-                    phone: profile.phone
-                };
-            case 'academic':
-                return {
-                    qualification: profile.qualification,
-                    course: profile.course,
-                    trainingMode: profile.trainingMode,
-                    courseDuration: profile.courseDuration
-                };
-            case 'financial':
-                return {
-                    courseFee: profile.courseFee,
-                    upfrontFee: profile.upfrontFee
-                };
-            case 'exams':
-                return {
-                    exams: (profile.exams && Array.isArray(profile.exams)) ? profile.exams : []
-                };
-            case 'cpd':
-                return {
-                    cpdRecords: (profile.cpdRecords && Array.isArray(profile.cpdRecords)) ? profile.cpdRecords : []
-                };
-            default:
-                return {};
-        }
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedStudent(null);
+        setEditData({});
+        setProfileImageFile(null);
+        setProfileImagePreview(null);
     };
 
     const handleInputChange = (field, value) => {
@@ -230,26 +241,23 @@ export default function AdminDetails() {
     };
 
     const saveChanges = async () => {
-        if (!profile || !profile._id) {
-            toast.error('Profile not loaded');
+        if (!selectedStudent || !selectedStudent._id) {
+            toast.error('No student selected');
             return;
         }
 
         setSaving(true);
         try {
-            const endpoint = searchType === 'student' ? '/students' : '/alumni';
-            const updateUrl = `${API_BASE_URL}${endpoint}/${profile._id}/update`;
-
-            // Prepare update data
-            let updateData = { ...editData };
+            const endpoint = dataType === 'students' ? '/students' : '/alumni';
+            const updateUrl = `${API_BASE_URL}${endpoint}/${selectedStudent._id}/update`;
 
             // Handle profile picture separately if it's being updated
-            if (editingSection === 'profile' && profileImageFile) {
+            if (activeTab === 'profile' && profileImageFile) {
                 const formData = new FormData();
                 formData.append('file', profileImageFile);
                 formData.append('section', 'profile');
 
-                const imageResponse = await fetch(`${API_BASE_URL}${endpoint}/${profile._id}/update`, {
+                const imageResponse = await fetch(updateUrl, {
                     method: 'PUT',
                     body: formData
                 });
@@ -260,10 +268,60 @@ export default function AdminDetails() {
 
                 const imageData = await imageResponse.json();
                 toast.success('Profile picture updated!');
-                setProfile(imageData.data);
-                setEditingSection(null);
+                
+                // Update the student in the list
+                setStudents(prev => prev.map(s => 
+                    s._id === selectedStudent._id ? imageData.data : s
+                ));
+                setSelectedStudent(imageData.data);
                 setProfileImageFile(null);
                 return;
+            }
+
+            // Prepare update data based on active tab
+            let updatePayload = {};
+            let section = '';
+
+            switch(activeTab) {
+                case 'info':
+                    updatePayload = { admissionNumber: editData.admissionNumber };
+                    section = 'info';
+                    break;
+                case 'personal':
+                    updatePayload = {
+                        firstName: editData.firstName,
+                        lastName: editData.lastName,
+                        dateOfBirth: editData.dateOfBirth,
+                        gender: editData.gender,
+                        email: editData.email,
+                        phone: editData.phone
+                    };
+                    section = 'personal';
+                    break;
+                case 'academic':
+                    updatePayload = {
+                        qualification: editData.qualification,
+                        course: editData.course,
+                        trainingMode: editData.trainingMode,
+                        courseDuration: editData.courseDuration
+                    };
+                    section = 'academic';
+                    break;
+                case 'financial':
+                    updatePayload = {
+                        courseFee: editData.courseFee,
+                        upfrontFee: editData.upfrontFee
+                    };
+                    section = 'financial';
+                    break;
+                case 'exams':
+                    updatePayload = { exams: editData.exams };
+                    section = 'exams';
+                    break;
+                case 'cpd':
+                    updatePayload = { cpdRecords: editData.cpdRecords };
+                    section = 'cpd';
+                    break;
             }
 
             // Regular data update
@@ -271,8 +329,8 @@ export default function AdminDetails() {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    section: editingSection,
-                    data: updateData
+                    section: section,
+                    data: updatePayload
                 })
             });
 
@@ -282,22 +340,19 @@ export default function AdminDetails() {
                 throw new Error(result.message || 'Update failed');
             }
 
-            setProfile(result.data);
-            setEditingSection(null);
+            // Update the student in the list
+            setStudents(prev => prev.map(s => 
+                s._id === selectedStudent._id ? result.data : s
+            ));
+            setSelectedStudent(result.data);
             toast.success('Changes saved successfully!');
+            
         } catch (error) {
             console.error('Save error:', error);
             toast.error(error.message || 'Failed to save changes');
         } finally {
             setSaving(false);
         }
-    };
-
-    const cancelEdit = () => {
-        setEditingSection(null);
-        setEditData({});
-        setProfileImageFile(null);
-        setProfileImagePreview(null);
     };
 
     return (
@@ -333,774 +388,673 @@ export default function AdminDetails() {
                         </Link>
                     </div>
                     <h2 className="text-2xl font-bold mb-2" style={{ color: '#2b2520' }}>
-                        🔍 Search & Edit Details
+                        📋 Manage {dataType === 'students' ? 'Students' : 'Alumni'}
                     </h2>
-                    <p className="text-sm text-gray-600">Search for students or alumni and edit their information</p>
+                    <p className="text-sm text-gray-600">View and edit student/alumni information</p>
                 </div>
 
-                {/* Search Section */}
+                {/* Controls */}
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                    <div className="flex gap-3 mb-4">
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="radio"
-                                value="student"
-                                checked={searchType === 'student'}
-                                onChange={(e) => setSearchType(e.target.value)}
-                                className="w-4 h-4"
-                            />
-                            <span className="font-semibold" style={{ color: '#2b2520' }}>Search Students</span>
-                        </label>
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="radio"
-                                value="alumni"
-                                checked={searchType === 'alumni'}
-                                onChange={(e) => setSearchType(e.target.value)}
-                                className="w-4 h-4"
-                            />
-                            <span className="font-semibold" style={{ color: '#2b2520' }}>Search Alumni</span>
-                        </label>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDataType('students')}
+                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${dataType === 'students' ? 'bg-primary-gold text-white' : 'bg-gray-100 text-gray-700'}`}
+                            >
+                                Students ({students.filter(s => !s.isAlumni).length})
+                            </button>
+                            <button
+                                onClick={() => setDataType('alumni')}
+                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${dataType === 'alumni' ? 'bg-primary-gold text-white' : 'bg-gray-100 text-gray-700'}`}
+                            >
+                                Alumni ({students.filter(s => s.isAlumni).length})
+                            </button>
+                        </div>
+                        
+                        <button
+                            onClick={fetchAllData}
+                            disabled={loading}
+                            className="px-4 py-2 rounded-lg font-semibold text-white bg-blue-500 hover:bg-blue-600 transition-colors flex items-center gap-2"
+                        >
+                            {loading ? 'Refreshing...' : 'Refresh Data'}
+                        </button>
                     </div>
 
-                    <form onSubmit={handleSearch} className="flex gap-3">
+                    <div className="relative">
+                        <CiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Search by name, email, phone, or admission number..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="flex-1 px-4 py-2 border-2 rounded-lg focus:outline-none transition-colors"
+                            className="w-full pl-12 pr-4 py-3 border-2 rounded-lg focus:outline-none transition-colors"
                             style={{ borderColor: '#d4a644' }}
                         />
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="px-6 py-2 rounded-lg font-semibold text-white transition-colors flex items-center gap-2"
-                            style={{ backgroundColor: loading ? '#ccc' : '#d4a644', cursor: loading ? 'not-allowed' : 'pointer' }}
-                        >
-                            <CiSearch /> {loading ? 'Searching...' : 'Search'}
-                        </button>
-                    </form>
+                    </div>
                 </div>
 
-                {/* Profile Display */}
-                {profile && (
-                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                        {/* Profile Header */}
-                        <div className="p-6 border-b-2" style={{ borderColor: '#d4a644', backgroundColor: '#f5f5f3' }}>
-                            <div className="flex items-center gap-6">
-                                <img
-                                    src={profileImagePreview || profile.profilePicture || 'https://via.placeholder.com/100'}
-                                    alt={`${profile.firstName} ${profile.lastName}`}
-                                    className="w-24 h-24 rounded-lg object-cover border-2"
-                                    style={{ borderColor: '#d4a644' }}
-                                />
-                                <div>
-                                    <h3 className="text-2xl font-bold" style={{ color: '#2b2520' }}>
-                                        {profile.firstName} {profile.lastName}
-                                    </h3>
-                                    <p className="text-gray-600">Admission #: {profile.admissionNumber}</p>
-                                    <p className="text-gray-600">Email: {profile.email}</p>
+                {/* Students Table */}
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Student</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Admission #</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                                            Loading...
+                                        </td>
+                                    </tr>
+                                ) : paginatedStudents.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                                            No {dataType} found
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    paginatedStudents.map((student) => (
+                                        <tr key={student._id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 h-10 w-10">
+                                                        <img
+                                                            className="h-10 w-10 rounded-full object-cover"
+                                                            src={student.profilePicture || 'https://via.placeholder.com/100'}
+                                                            alt={student.firstName}
+                                                        />
+                                                    </div>
+                                                    <div className="ml-4">
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            {student.firstName} {student.lastName}
+                                                        </div>
+                                                        <div className="text-sm text-gray-500">
+                                                            {student.gender} • {student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'N/A'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {student.admissionNumber || 'N/A'}
+                                            </td>
+
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button
+                                                    onClick={() => openEditModal(student)}
+                                                    className="text-primary-gold hover:text-primary-yellow px-3 py-1 rounded-md font-semibold flex items-center gap-1"
+                                                >
+                                                    <FaEdit /> Edit
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="px-6 py-4 border-t border-gray-200">
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm text-gray-700">
+                                    Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                                    <span className="font-medium">
+                                        {Math.min(startIndex + ITEMS_PER_PAGE, filteredStudents.length)}
+                                    </span>{' '}
+                                    of <span className="font-medium">{filteredStudents.length}</span> results
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1 rounded border disabled:opacity-50"
+                                    >
+                                        Previous
+                                    </button>
+                                    {[...Array(totalPages)].map((_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setCurrentPage(i + 1)}
+                                            className={`px-3 py-1 rounded ${currentPage === i + 1 ? 'bg-primary-gold text-white' : 'border'}`}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1 rounded border disabled:opacity-50"
+                                    >
+                                        Next
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    )}
+                </div>
+            </div>
 
-                        {/* Sections Grid */}
-                        <div className="p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Profile Picture Section */}
-                                <div className="p-4 rounded-lg border-2" style={{ borderColor: '#d4a644' }}>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-semibold" style={{ color: '#2b2520' }}>📸 {SECTIONS.profile}</h4>
-                                        {editingSection !== 'profile' && (
-                                            <button
-                                                onClick={() => startEditing('profile')}
-                                                className="text-white px-3 py-1 rounded text-sm font-semibold flex items-center gap-1"
-                                                style={{ backgroundColor: '#d4a644' }}
-                                            >
-                                                <FaEdit /> Edit
-                                            </button>
-                                        )}
+            {/* Edit Modal */}
+            {isModalOpen && selectedStudent && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-999">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                        {/* Modal Header */}
+                        <div className="p-6 border-b" style={{ backgroundColor: '#f5f5f3' }}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <img
+                                        src={profileImagePreview || selectedStudent.profilePicture || 'https://via.placeholder.com/100'}
+                                        alt={`${selectedStudent.firstName} ${selectedStudent.lastName}`}
+                                        className="w-16 h-16 rounded-lg object-cover border-2"
+                                        style={{ borderColor: '#d4a644' }}
+                                    />
+                                    <div>
+                                        <h3 className="text-xl font-bold" style={{ color: '#2b2520' }}>
+                                            {selectedStudent.firstName} {selectedStudent.lastName}
+                                        </h3>
+                                        <p className="text-gray-600">Editing {dataType.slice(0, -1)} profile</p>
                                     </div>
-
-                                    {editingSection === 'profile' ? (
-                                        <div className="space-y-3">
-                                            <div className="flex justify-center">
-                                                <img
-                                                    src={profileImagePreview}
-                                                    alt="Preview"
-                                                    className="w-20 h-20 rounded-lg object-cover border-2"
-                                                    style={{ borderColor: '#d4a644' }}
-                                                />
-                                            </div>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleProfileImageChange}
-                                                className="block w-full text-sm"
-                                            />
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={saveChanges}
-                                                    disabled={saving}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold text-white flex items-center gap-1 justify-center"
-                                                    style={{ backgroundColor: saving ? '#ccc' : '#2b8a3e' }}
-                                                >
-                                                    <FaSave /> Save
-                                                </button>
-                                                <button
-                                                    onClick={cancelEdit}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold border-2"
-                                                    style={{ borderColor: '#d32f2f', color: '#d32f2f' }}
-                                                >
-                                                    <FaTimes /> Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <p className="text-gray-600 text-sm">Profile picture updated</p>
-                                    )}
                                 </div>
+                                <button
+                                    onClick={closeModal}
+                                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                                >
+                                    &times;
+                                </button>
+                            </div>
+                        </div>
 
-                                {/* Personal Information */}
-                                <div className="p-4 rounded-lg border-2" style={{ borderColor: '#d4a644' }}>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-semibold" style={{ color: '#2b2520' }}>👤 {SECTIONS.personal}</h4>
-                                        {editingSection !== 'personal' && (
-                                            <button
-                                                onClick={() => startEditing('personal')}
-                                                className="text-white px-3 py-1 rounded text-sm font-semibold flex items-center gap-1"
-                                                style={{ backgroundColor: '#d4a644' }}
-                                            >
-                                                <FaEdit /> Edit
-                                            </button>
-                                        )}
+                        {/* Tabs */}
+                        <div className="border-b">
+                            <div className="flex overflow-x-auto">
+                                {Object.entries(SECTIONS).map(([key, label]) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => setActiveTab(key)}
+                                        className={`px-6 py-3 font-semibold whitespace-nowrap ${activeTab === key ? 'border-b-2 text-primary-gold' : 'text-gray-600 hover:text-gray-900'}`}
+                                        style={activeTab === key ? { borderColor: '#d4a644' } : {}}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Tab Content */}
+                        <div className="p-6 overflow-y-auto max-h-[50vh]">
+                            {/* Info Tab */}
+                            {activeTab === 'info' && (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Admission Number
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editData.admissionNumber || ''}
+                                            onChange={(e) => handleInputChange('admissionNumber', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                            placeholder="Enter admission number"
+                                        />
                                     </div>
+                                </div>
+                            )}
 
-                                    {editingSection === 'personal' ? (
-                                        <div className="space-y-3">
+                            {/* Personal Tab */}
+                            {activeTab === 'personal' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            First Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editData.firstName || ''}
+                                            onChange={(e) => handleInputChange('firstName', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Last Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editData.lastName || ''}
+                                            onChange={(e) => handleInputChange('lastName', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Date of Birth
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={editData.dateOfBirth ? editData.dateOfBirth.split('T')[0] : ''}
+                                            onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Gender
+                                        </label>
+                                        <select
+                                            value={editData.gender || ''}
+                                            onChange={(e) => handleInputChange('gender', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        >
+                                            <option value="">Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Email
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={editData.email || ''}
+                                            onChange={(e) => handleInputChange('email', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Phone
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            value={editData.phone || ''}
+                                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Academic Tab */}
+                            {activeTab === 'academic' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Qualification
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editData.qualification || ''}
+                                            onChange={(e) => handleInputChange('qualification', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Course
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editData.course || ''}
+                                            onChange={(e) => handleInputChange('course', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Training Mode
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editData.trainingMode || ''}
+                                            onChange={(e) => handleInputChange('trainingMode', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Course Duration
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editData.courseDuration || ''}
+                                            onChange={(e) => handleInputChange('courseDuration', e.target.value)}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Financial Tab */}
+                            {activeTab === 'financial' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Course Fee (KES)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={editData.courseFee || ''}
+                                            onChange={(e) => handleInputChange('courseFee', Number(e.target.value))}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Upfront Fee (KES)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={editData.upfrontFee || ''}
+                                            onChange={(e) => handleInputChange('upfrontFee', Number(e.target.value))}
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Profile Picture Tab */}
+                            {activeTab === 'profile' && (
+                                <div className="space-y-4">
+                                    <div className="flex flex-col items-center">
+                                        <img
+                                            src={profileImagePreview || 'https://via.placeholder.com/200'}
+                                            alt="Profile Preview"
+                                            className="w-32 h-32 rounded-full object-cover border-4 mb-4"
+                                            style={{ borderColor: '#d4a644' }}
+                                        />
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleProfileImageChange}
+                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-gold file:text-white hover:file:bg-primary-yellow"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Exams Tab - Reuse your existing exam editing logic */}
+                            {activeTab === 'exams' && (
+                                <div className="space-y-4">
+                                    {/* Existing Exams */}
+                                    {editData.exams && editData.exams.length > 0 && (
+                                        <div>
+                                            <h4 className="text-sm font-semibold mb-2" style={{ color: '#2b2520' }}>Existing Exams</h4>
+                                            {editData.exams.map((exam, idx) => (
+                                                <div key={idx} className="p-3 bg-gray-50 rounded border-l-4 flex gap-2 items-end mb-2" style={{ borderColor: '#d4a644' }}>
+                                                    <div className="flex-1 space-y-2">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Exam Name"
+                                                            value={exam.name || ''}
+                                                            onChange={(e) => handleExamChange(idx, 'name', e.target.value)}
+                                                            className="w-full px-3 py-2 border-2 rounded text-sm"
+                                                            style={{ borderColor: '#d4a644' }}
+                                                        />
+                                                        <select
+                                                            value={exam.score || ''}
+                                                            onChange={(e) => handleExamChange(idx, 'score', e.target.value)}
+                                                            className="w-full px-3 py-2 border-2 rounded text-sm font-semibold"
+                                                            style={{ borderColor: '#d4a644' }}
+                                                        >
+                                                            {GRADE_OPTIONS.map((grade) => (
+                                                                <option key={grade.value} value={grade.value}>
+                                                                    {grade.label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleRemoveExam(idx)}
+                                                        className="px-3 py-2 rounded bg-red-500 text-white font-semibold"
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Add New Exam */}
+                                    <div className="p-3 bg-blue-50 rounded border-2" style={{ borderColor: '#d4a644' }}>
+                                        <h4 className="text-sm font-semibold mb-2" style={{ color: '#2b2520' }}>Add New Exam</h4>
+                                        <div className="space-y-2">
                                             <input
                                                 type="text"
-                                                placeholder="First Name"
-                                                value={editData.firstName || ''}
-                                                onChange={(e) => handleInputChange('firstName', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <input
-                                                type="text"
-                                                placeholder="Last Name"
-                                                value={editData.lastName || ''}
-                                                onChange={(e) => handleInputChange('lastName', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <input
-                                                type="date"
-                                                value={editData.dateOfBirth ? editData.dateOfBirth.split('T')[0] : ''}
-                                                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                                                placeholder="Exam Name"
+                                                value={newExamName}
+                                                onChange={(e) => setNewExamName(e.target.value)}
                                                 className="w-full px-3 py-2 border-2 rounded text-sm"
                                                 style={{ borderColor: '#d4a644' }}
                                             />
                                             <select
-                                                value={editData.gender || ''}
-                                                onChange={(e) => handleInputChange('gender', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
+                                                value={newExamScore}
+                                                onChange={(e) => setNewExamScore(e.target.value)}
+                                                className="w-full px-3 py-2 border-2 rounded text-sm font-semibold"
                                                 style={{ borderColor: '#d4a644' }}
                                             >
-                                                <option value="">Select Gender</option>
-                                                <option value="Male">Male</option>
-                                                <option value="Female">Female</option>
-                                                <option value="Other">Other</option>
+                                                {GRADE_OPTIONS.map((grade) => (
+                                                    <option key={grade.value} value={grade.value}>
+                                                        {grade.label}
+                                                    </option>
+                                                ))}
                                             </select>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={saveChanges}
-                                                    disabled={saving}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold text-white flex items-center gap-1 justify-center"
-                                                    style={{ backgroundColor: saving ? '#ccc' : '#2b8a3e' }}
-                                                >
-                                                    <FaSave /> Save
-                                                </button>
-                                                <button
-                                                    onClick={cancelEdit}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold border-2"
-                                                    style={{ borderColor: '#d32f2f', color: '#d32f2f' }}
-                                                >
-                                                    <FaTimes /> Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-1 text-sm text-gray-600">
-                                            <p><strong>First:</strong> {profile.firstName}</p>
-                                            <p><strong>Last:</strong> {profile.lastName}</p>
-                                            <p><strong>DOB:</strong> {profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : 'N/A'}</p>
-                                            <p><strong>Gender:</strong> {profile.gender}</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Contact Information */}
-                                <div className="p-4 rounded-lg border-2" style={{ borderColor: '#d4a644' }}>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-semibold" style={{ color: '#2b2520' }}>📞 {SECTIONS.contact}</h4>
-                                        {editingSection !== 'contact' && (
                                             <button
-                                                onClick={() => startEditing('contact')}
-                                                className="text-white px-3 py-1 rounded text-sm font-semibold flex items-center gap-1"
-                                                style={{ backgroundColor: '#d4a644' }}
+                                                onClick={handleAddExam}
+                                                className="w-full px-3 py-2 rounded font-semibold text-white flex items-center gap-2 justify-center"
+                                                style={{ backgroundColor: '#2b8a3e' }}
                                             >
-                                                <FaEdit /> Edit
+                                                <FaPlus /> Add Exam
                                             </button>
-                                        )}
+                                        </div>
                                     </div>
-
-                                    {editingSection === 'contact' ? (
-                                        <div className="space-y-3">
-                                            <input
-                                                type="email"
-                                                placeholder="Email"
-                                                value={editData.email || ''}
-                                                onChange={(e) => handleInputChange('email', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <input
-                                                type="tel"
-                                                placeholder="Phone"
-                                                value={editData.phone || ''}
-                                                onChange={(e) => handleInputChange('phone', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={saveChanges}
-                                                    disabled={saving}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold text-white flex items-center gap-1 justify-center"
-                                                    style={{ backgroundColor: saving ? '#ccc' : '#2b8a3e' }}
-                                                >
-                                                    <FaSave /> Save
-                                                </button>
-                                                <button
-                                                    onClick={cancelEdit}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold border-2"
-                                                    style={{ borderColor: '#d32f2f', color: '#d32f2f' }}
-                                                >
-                                                    <FaTimes /> Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-1 text-sm text-gray-600">
-                                            <p><strong>Email:</strong> {profile.email}</p>
-                                            <p><strong>Phone:</strong> {profile.phone}</p>
-                                        </div>
-                                    )}
                                 </div>
+                            )}
 
-                                {/* Academic Information */}
-                                <div className="p-4 rounded-lg border-2" style={{ borderColor: '#d4a644' }}>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-semibold" style={{ color: '#2b2520' }}>🎓 {SECTIONS.academic}</h4>
-                                        {editingSection !== 'academic' && (
-                                            <button
-                                                onClick={() => startEditing('academic')}
-                                                className="text-white px-3 py-1 rounded text-sm font-semibold flex items-center gap-1"
-                                                style={{ backgroundColor: '#d4a644' }}
-                                            >
-                                                <FaEdit /> Edit
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {editingSection === 'academic' ? (
-                                        <div className="space-y-3">
-                                            <input
-                                                type="text"
-                                                placeholder="Qualification"
-                                                value={editData.qualification || ''}
-                                                onChange={(e) => handleInputChange('qualification', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <input
-                                                type="text"
-                                                placeholder="Course"
-                                                value={editData.course || ''}
-                                                onChange={(e) => handleInputChange('course', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <input
-                                                type="text"
-                                                placeholder="Training Mode"
-                                                value={editData.trainingMode || ''}
-                                                onChange={(e) => handleInputChange('trainingMode', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <input
-                                                type="text"
-                                                placeholder="Course Duration"
-                                                value={editData.courseDuration || ''}
-                                                onChange={(e) => handleInputChange('courseDuration', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={saveChanges}
-                                                    disabled={saving}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold text-white flex items-center gap-1 justify-center"
-                                                    style={{ backgroundColor: saving ? '#ccc' : '#2b8a3e' }}
-                                                >
-                                                    <FaSave /> Save
-                                                </button>
-                                                <button
-                                                    onClick={cancelEdit}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold border-2"
-                                                    style={{ borderColor: '#d32f2f', color: '#d32f2f' }}
-                                                >
-                                                    <FaTimes /> Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-1 text-sm text-gray-600">
-                                            <p><strong>Qualification:</strong> {profile.qualification}</p>
-                                            <p><strong>Course:</strong> {profile.course}</p>
-                                            <p><strong>Training Mode:</strong> {profile.trainingMode}</p>
-                                            <p><strong>Duration:</strong> {profile.courseDuration}</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Financial Information */}
-                                <div className="p-4 rounded-lg border-2" style={{ borderColor: '#d4a644' }}>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-semibold" style={{ color: '#2b2520' }}>💰 {SECTIONS.financial}</h4>
-                                        {editingSection !== 'financial' && (
-                                            <button
-                                                onClick={() => startEditing('financial')}
-                                                className="text-white px-3 py-1 rounded text-sm font-semibold flex items-center gap-1"
-                                                style={{ backgroundColor: '#d4a644' }}
-                                            >
-                                                <FaEdit /> Edit
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {editingSection === 'financial' ? (
-                                        <div className="space-y-3">
-                                            <input
-                                                type="number"
-                                                placeholder="Course Fee"
-                                                value={editData.courseFee || ''}
-                                                onChange={(e) => handleInputChange('courseFee', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <input
-                                                type="number"
-                                                placeholder="Upfront Fee"
-                                                value={editData.upfrontFee || ''}
-                                                onChange={(e) => handleInputChange('upfrontFee', e.target.value)}
-                                                className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                style={{ borderColor: '#d4a644' }}
-                                            />
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={saveChanges}
-                                                    disabled={saving}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold text-white flex items-center gap-1 justify-center"
-                                                    style={{ backgroundColor: saving ? '#ccc' : '#2b8a3e' }}
-                                                >
-                                                    <FaSave /> Save
-                                                </button>
-                                                <button
-                                                    onClick={cancelEdit}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold border-2"
-                                                    style={{ borderColor: '#d32f2f', color: '#d32f2f' }}
-                                                >
-                                                    <FaTimes /> Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-1 text-sm text-gray-600">
-                                            <p><strong>Course Fee:</strong> KES {(profile.courseFee || 0).toLocaleString()}</p>
-                                            <p><strong>Upfront Fee:</strong> KES {(profile.upfrontFee || 0).toLocaleString()}</p>
-                                            <p><strong>Balance:</strong> KES {(Math.max(0, (profile.courseFee || 0) - (profile.upfrontFee || 0))).toLocaleString()}</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Exam Information */}
-                                <div className="p-4 rounded-lg border-2 md:col-span-2" style={{ borderColor: '#d4a644' }}>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-semibold" style={{ color: '#2b2520' }}>📊 {SECTIONS.exams}</h4>
-                                        {editingSection !== 'exams' && (
-                                            <button
-                                                onClick={() => {
-                                                    startEditing('exams');
-                                                    setNewExamName('');
-                                                    setNewExamScore('');
-                                                }}
-                                                className="text-white px-3 py-1 rounded text-sm font-semibold flex items-center gap-1"
-                                                style={{ backgroundColor: '#d4a644' }}
-                                            >
-                                                <FaEdit /> Edit
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {editingSection === 'exams' ? (
-                                        <div className="space-y-3">
-                                            {/* Existing Exams */}
-                                            {editData.exams && editData.exams.length > 0 && (
-                                                <div>
-                                                    <p className="text-sm font-semibold mb-2" style={{ color: '#2b2520' }}>Existing Exams</p>
-                                                    {editData.exams.map((exam, idx) => (
-                                                        <div key={idx} className="p-3 bg-gray-50 rounded border-l-4 flex gap-2 items-end mb-2" style={{ borderColor: '#d4a644' }}>
-                                                            <div className="flex-1 space-y-2">
-                                                                <input
-                                                                    type="text"
-                                                                    placeholder="Exam Name"
-                                                                    value={exam.name || ''}
-                                                                    onChange={(e) => handleExamChange(idx, 'name', e.target.value)}
-                                                                    className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                                    style={{ borderColor: '#d4a644' }}
-                                                                />
-                                                                <select
-                                                                    value={exam.score || ''}
-                                                                    onChange={(e) => handleExamChange(idx, 'score', e.target.value)}
-                                                                    className="w-full px-3 py-2 border-2 rounded text-sm font-semibold"
-                                                                    style={{ borderColor: '#d4a644' }}
-                                                                >
-                                                                    {GRADE_OPTIONS.map((grade) => (
-                                                                        <option key={grade.value} value={grade.value}>
-                                                                            {grade.label}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                            <button
-                                                                onClick={() => handleRemoveExam(idx)}
-                                                                className="px-3 py-2 rounded bg-red-500 text-white font-semibold"
-                                                                title="Delete exam"
-                                                            >
-                                                                <FaTrash />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* Add New Exam */}
-                                            <div className="p-3 bg-blue-50 rounded border-2" style={{ borderColor: '#d4a644' }}>
-                                                <p className="text-sm font-semibold mb-2" style={{ color: '#2b2520' }}>Add New Exam</p>
-                                                <div className="space-y-2">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Exam Name"
-                                                        value={newExamName}
-                                                        onChange={(e) => setNewExamName(e.target.value)}
-                                                        className="w-full px-3 py-2 border-2 rounded text-sm"
-                                                        style={{ borderColor: '#d4a644' }}
-                                                    />
-                                                    <select
-                                                        value={newExamScore}
-                                                        onChange={(e) => setNewExamScore(e.target.value)}
-                                                        className="w-full px-3 py-2 border-2 rounded text-sm font-semibold"
-                                                        style={{ borderColor: '#d4a644' }}
-                                                    >
-                                                        {GRADE_OPTIONS.map((grade) => (
-                                                            <option key={grade.value} value={grade.value}>
-                                                                {grade.label}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                    <button
-                                                        onClick={handleAddExam}
-                                                        className="w-full px-3 py-2 rounded font-semibold text-white flex items-center gap-2 justify-center"
-                                                        style={{ backgroundColor: '#2b8a3e' }}
-                                                    >
-                                                        <FaPlus /> Add Exam
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={saveChanges}
-                                                    disabled={saving}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold text-white flex items-center gap-1 justify-center"
-                                                    style={{ backgroundColor: saving ? '#ccc' : '#2b8a3e' }}
-                                                >
-                                                    <FaSave /> Save
-                                                </button>
-                                                <button
-                                                    onClick={cancelEdit}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold border-2"
-                                                    style={{ borderColor: '#d32f2f', color: '#d32f2f' }}
-                                                >
-                                                    <FaTimes /> Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-2">
-                                            {profile.exams && profile.exams.length > 0 ? (
-                                                profile.exams.map((exam, idx) => (
-                                                    <div key={idx} className="p-2 bg-gray-50 rounded text-sm">
-                                                        <p><strong>{exam.name}</strong></p>
-                                                        <p className="text-gray-600">Grade: {exam.score || 'Pending'}</p>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="text-gray-600 text-sm">No exams added yet. Click Edit to add exams.</p>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* CPD Records */}
-                                <div className="p-4 rounded-lg border-2 md:col-span-2" style={{ borderColor: '#d4a644' }}>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-semibold" style={{ color: '#2b2520' }}>📋 {SECTIONS.cpd}</h4>
-                                        {editingSection !== 'cpd' && (
-                                            <button
-                                                onClick={() => {
-                                                    startEditing('cpd');
-                                                    setNewCpdYear(new Date().getFullYear());
-                                                    setNewCpdDate('');
-                                                    setNewCpdResult('pass');
-                                                    setNewCpdScore('');
-                                                    setNewCpdRemarks('');
-                                                }}
-                                                className="text-white px-3 py-1 rounded text-sm font-semibold flex items-center gap-1"
-                                                style={{ backgroundColor: '#d4a644' }}
-                                            >
-                                                <FaEdit /> Edit
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {editingSection === 'cpd' ? (
-                                        <div className="space-y-3">
-                                            {/* Existing CPD Records */}
-                                            {editData.cpdRecords && editData.cpdRecords.length > 0 && (
-                                                <div>
-                                                    <p className="text-sm font-semibold mb-2" style={{ color: '#2b2520' }}>Existing CPD Records</p>
-                                                    {editData.cpdRecords.map((cpd, idx) => (
-                                                        <div key={idx} className="p-3 bg-gray-50 rounded border-l-4 space-y-2 mb-2" style={{ borderColor: '#d4a644' }}>
-                                                            <div className="flex gap-2 items-center justify-between">
-                                                                <div className="flex-1 grid grid-cols-2 gap-2">
-                                                                    <div>
-                                                                        <label className="text-xs font-semibold text-gray-600">Year</label>
-                                                                        <input
-                                                                            type="number"
-                                                                            min="2000"
-                                                                            max={new Date().getFullYear() + 1}
-                                                                            value={cpd.year || new Date().getFullYear()}
-                                                                            onChange={(e) => handleCpdChange(idx, 'year', Number(e.target.value))}
-                                                                            className="w-full px-2 py-1 border-2 rounded text-sm"
-                                                                            style={{ borderColor: '#d4a644' }}
-                                                                        />
-                                                                    </div>
-                                                                    <div>
-                                                                        <label className="text-xs font-semibold text-gray-600">Date Taken</label>
-                                                                        <input
-                                                                            type="date"
-                                                                            value={cpd.dateTaken ? cpd.dateTaken.split('T')[0] : ''}
-                                                                            onChange={(e) => handleCpdChange(idx, 'dateTaken', e.target.value)}
-                                                                            className="w-full px-2 py-1 border-2 rounded text-sm"
-                                                                            style={{ borderColor: '#d4a644' }}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => handleRemoveCpd(idx)}
-                                                                    className="px-3 py-2 rounded bg-red-500 text-white font-semibold h-fit"
-                                                                    title="Delete CPD record"
-                                                                >
-                                                                    <FaTrash />
-                                                                </button>
-                                                            </div>
-                                                            <div className="grid grid-cols-2 gap-2">
-                                                                <div>
-                                                                    <label className="text-xs font-semibold text-gray-600">Result</label>
-                                                                    <select
-                                                                        value={cpd.result || 'pass'}
-                                                                        onChange={(e) => handleCpdChange(idx, 'result', e.target.value)}
-                                                                        className="w-full px-2 py-1 border-2 rounded text-sm font-semibold"
-                                                                        style={{ borderColor: '#d4a644' }}
-                                                                    >
-                                                                        <option value="pass">✅ Pass</option>
-                                                                        <option value="fail">❌ Fail</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-xs font-semibold text-gray-600">CPD Points</label>
-                                                                    <input
-                                                                        type="number"
-                                                                        placeholder="e.g., 3.5"
-                                                                        min="0"
-                                                                        max="100"
-                                                                        value={cpd.score || ''}
-                                                                        onChange={(e) => handleCpdChange(idx, 'score', e.target.value ? Number(e.target.value) : null)}
-                                                                        className="w-full px-2 py-1 border-2 rounded text-sm"
-                                                                        style={{ borderColor: '#d4a644' }}
-                                                                    />
-                                                                </div>
-                                                            </div>
+                            {/* CPD Tab - Reuse your existing CPD editing logic */}
+                            {activeTab === 'cpd' && (
+                                <div className="space-y-4">
+                                    {/* Existing CPD Records */}
+                                    {editData.cpdRecords && editData.cpdRecords.length > 0 && (
+                                        <div>
+                                            <h4 className="text-sm font-semibold mb-2" style={{ color: '#2b2520' }}>Existing CPD Records</h4>
+                                            {editData.cpdRecords.map((cpd, idx) => (
+                                                <div key={idx} className="p-3 bg-gray-50 rounded border-l-4 space-y-2 mb-2" style={{ borderColor: '#d4a644' }}>
+                                                    <div className="flex gap-2 items-center justify-between">
+                                                        <div className="flex-1 grid grid-cols-2 gap-2">
                                                             <div>
-                                                                <label className="text-xs font-semibold text-gray-600">Remarks (Optional)</label>
-                                                                <textarea
-                                                                    placeholder="Add any remarks..."
-                                                                    value={cpd.remarks || ''}
-                                                                    onChange={(e) => handleCpdChange(idx, 'remarks', e.target.value)}
+                                                                <label className="text-xs font-semibold text-gray-600">Year</label>
+                                                                <input
+                                                                    type="number"
+                                                                    min="2000"
+                                                                    max={new Date().getFullYear() + 1}
+                                                                    value={cpd.year || new Date().getFullYear()}
+                                                                    onChange={(e) => handleCpdChange(idx, 'year', Number(e.target.value))}
                                                                     className="w-full px-2 py-1 border-2 rounded text-sm"
                                                                     style={{ borderColor: '#d4a644' }}
-                                                                    rows="2"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-xs font-semibold text-gray-600">Date Taken</label>
+                                                                <input
+                                                                    type="date"
+                                                                    value={cpd.dateTaken ? cpd.dateTaken.split('T')[0] : ''}
+                                                                    onChange={(e) => handleCpdChange(idx, 'dateTaken', e.target.value)}
+                                                                    className="w-full px-2 py-1 border-2 rounded text-sm"
+                                                                    style={{ borderColor: '#d4a644' }}
                                                                 />
                                                             </div>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* Add New CPD Record */}
-                                            <div className="p-3 bg-blue-50 rounded border-2" style={{ borderColor: '#d4a644' }}>
-                                                <p className="text-sm font-semibold mb-2" style={{ color: '#2b2520' }}>Add New CPD Record</p>
-                                                <div className="grid grid-cols-2 gap-2 mb-2">
-                                                    <div>
-                                                        <label className="text-xs font-semibold text-gray-600">Year</label>
-                                                        <input
-                                                            type="number"
-                                                            min="2000"
-                                                            max={new Date().getFullYear() + 1}
-                                                            value={newCpdYear}
-                                                            onChange={(e) => setNewCpdYear(Number(e.target.value))}
-                                                            className="w-full px-2 py-1 border-2 rounded text-sm"
-                                                            style={{ borderColor: '#d4a644' }}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-xs font-semibold text-gray-600">Date Taken</label>
-                                                        <input
-                                                            type="date"
-                                                            value={newCpdDate}
-                                                            onChange={(e) => setNewCpdDate(e.target.value)}
-                                                            className="w-full px-2 py-1 border-2 rounded text-sm"
-                                                            style={{ borderColor: '#d4a644' }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-2 mb-2">
-                                                    <div>
-                                                        <label className="text-xs font-semibold text-gray-600">Result</label>
-                                                        <select
-                                                            value={newCpdResult}
-                                                            onChange={(e) => setNewCpdResult(e.target.value)}
-                                                            className="w-full px-2 py-1 border-2 rounded text-sm font-semibold"
-                                                            style={{ borderColor: '#d4a644' }}
+                                                        <button
+                                                            onClick={() => handleRemoveCpd(idx)}
+                                                            className="px-3 py-2 rounded bg-red-500 text-white font-semibold h-fit"
                                                         >
-                                                            <option value="pass">✅ Pass</option>
-                                                            <option value="fail">❌ Fail</option>
-                                                        </select>
+                                                            <FaTrash />
+                                                        </button>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <div>
+                                                            <label className="text-xs font-semibold text-gray-600">Result</label>
+                                                            <select
+                                                                value={cpd.result || 'pass'}
+                                                                onChange={(e) => handleCpdChange(idx, 'result', e.target.value)}
+                                                                className="w-full px-2 py-1 border-2 rounded text-sm font-semibold"
+                                                                style={{ borderColor: '#d4a644' }}
+                                                            >
+                                                                <option value="pass">✅ Pass</option>
+                                                                <option value="fail">❌ Fail</option>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-xs font-semibold text-gray-600">CPD Points</label>
+                                                            <input
+                                                                type="number"
+                                                                placeholder="e.g., 3.5"
+                                                                min="0"
+                                                                max="100"
+                                                                value={cpd.score || ''}
+                                                                onChange={(e) => handleCpdChange(idx, 'score', e.target.value ? Number(e.target.value) : null)}
+                                                                className="w-full px-2 py-1 border-2 rounded text-sm"
+                                                                style={{ borderColor: '#d4a644' }}
+                                                            />
+                                                        </div>
                                                     </div>
                                                     <div>
-                                                        <label className="text-xs font-semibold text-gray-600">CPD Points</label>
-                                                        <input
-                                                            type="number"
-                                                            placeholder="e.g., 3.5"
-                                                            min="0"
-                                                            max="100"
-                                                            value={newCpdScore}
-                                                            onChange={(e) => setNewCpdScore(e.target.value)}
+                                                        <label className="text-xs font-semibold text-gray-600">Remarks</label>
+                                                        <textarea
+                                                            placeholder="Add any remarks..."
+                                                            value={cpd.remarks || ''}
+                                                            onChange={(e) => handleCpdChange(idx, 'remarks', e.target.value)}
                                                             className="w-full px-2 py-1 border-2 rounded text-sm"
                                                             style={{ borderColor: '#d4a644' }}
+                                                            rows="2"
                                                         />
                                                     </div>
                                                 </div>
-                                                <div className="mb-2">
-                                                    <label className="text-xs font-semibold text-gray-600">Remarks (Optional)</label>
-                                                    <textarea
-                                                        placeholder="Add any remarks..."
-                                                        value={newCpdRemarks}
-                                                        onChange={(e) => setNewCpdRemarks(e.target.value)}
-                                                        className="w-full px-2 py-1 border-2 rounded text-sm"
-                                                        style={{ borderColor: '#d4a644' }}
-                                                        rows="2"
-                                                    />
-                                                </div>
-                                                <button
-                                                    onClick={handleAddCpd}
-                                                    className="w-full px-3 py-2 rounded font-semibold text-white flex items-center gap-2 justify-center"
-                                                    style={{ backgroundColor: '#2b8a3e' }}
-                                                >
-                                                    <FaPlus /> Add CPD Record
-                                                </button>
-                                            </div>
-
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={saveChanges}
-                                                    disabled={saving}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold text-white flex items-center gap-1 justify-center"
-                                                    style={{ backgroundColor: saving ? '#ccc' : '#2b8a3e' }}
-                                                >
-                                                    <FaSave /> Save
-                                                </button>
-                                                <button
-                                                    onClick={cancelEdit}
-                                                    className="flex-1 px-3 py-2 rounded font-semibold border-2"
-                                                    style={{ borderColor: '#d32f2f', color: '#d32f2f' }}
-                                                >
-                                                    <FaTimes /> Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-2">
-                                            {profile.cpdRecords && profile.cpdRecords.length > 0 ? (
-                                                [...profile.cpdRecords].reverse().map((cpd, idx) => (
-                                                    <div key={idx} className="p-3 bg-gray-50 rounded border-l-4" style={{ borderColor: '#d4a644' }}>
-                                                        <div className="flex justify-between items-start mb-2">
-                                                            <div>
-                                                                <p className="font-semibold" style={{ color: '#2b2520' }}>
-                                                                    {cpd.year} - {cpd.dateTaken ? new Date(cpd.dateTaken).toLocaleDateString() : 'N/A'}
-                                                                </p>
-                                                            </div>
-                                                            <span className={`px-2 py-1 rounded text-xs font-bold ${cpd.result === 'pass' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                                {cpd.result === 'pass' ? '✅ PASS' : '❌ FAIL'}
-                                                            </span>
-                                                        </div>
-                                                        {cpd.score && <p className="text-sm text-gray-600">CPD Points: {cpd.score}</p>}
-                                                        {cpd.remarks && <p className="text-sm text-gray-600 italic">Remarks: {cpd.remarks}</p>}
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="text-gray-600 text-sm">No CPD records added yet. Click Edit to add records.</p>
-                                            )}
+                                            ))}
                                         </div>
                                     )}
+
+                                    {/* Add New CPD Record */}
+                                    <div className="p-3 bg-blue-50 rounded border-2" style={{ borderColor: '#d4a644' }}>
+                                        <h4 className="text-sm font-semibold mb-2" style={{ color: '#2b2520' }}>Add New CPD Record</h4>
+                                        <div className="grid grid-cols-2 gap-2 mb-2">
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600">Year</label>
+                                                <input
+                                                    type="number"
+                                                    min="2000"
+                                                    max={new Date().getFullYear() + 1}
+                                                    value={newCpdYear}
+                                                    onChange={(e) => setNewCpdYear(Number(e.target.value))}
+                                                    className="w-full px-2 py-1 border-2 rounded text-sm"
+                                                    style={{ borderColor: '#d4a644' }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600">Date Taken</label>
+                                                <input
+                                                    type="date"
+                                                    value={newCpdDate}
+                                                    onChange={(e) => setNewCpdDate(e.target.value)}
+                                                    className="w-full px-2 py-1 border-2 rounded text-sm"
+                                                    style={{ borderColor: '#d4a644' }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 mb-2">
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600">Result</label>
+                                                <select
+                                                    value={newCpdResult}
+                                                    onChange={(e) => setNewCpdResult(e.target.value)}
+                                                    className="w-full px-2 py-1 border-2 rounded text-sm font-semibold"
+                                                    style={{ borderColor: '#d4a644' }}
+                                                >
+                                                    <option value="pass">✅ Pass</option>
+                                                    <option value="fail">❌ Fail</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600">CPD Points</label>
+                                                <input
+                                                    type="number"
+                                                    placeholder="e.g., 3.5"
+                                                    min="0"
+                                                    max="100"
+                                                    value={newCpdScore}
+                                                    onChange={(e) => setNewCpdScore(e.target.value)}
+                                                    className="w-full px-2 py-1 border-2 rounded text-sm"
+                                                    style={{ borderColor: '#d4a644' }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="mb-2">
+                                            <label className="text-xs font-semibold text-gray-600">Remarks</label>
+                                            <textarea
+                                                placeholder="Add any remarks..."
+                                                value={newCpdRemarks}
+                                                onChange={(e) => setNewCpdRemarks(e.target.value)}
+                                                className="w-full px-2 py-1 border-2 rounded text-sm"
+                                                style={{ borderColor: '#d4a644' }}
+                                                rows="2"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleAddCpd}
+                                            className="w-full px-3 py-2 rounded font-semibold text-white flex items-center gap-2 justify-center"
+                                            style={{ backgroundColor: '#2b8a3e' }}
+                                        >
+                                            <FaPlus /> Add CPD Record
+                                        </button>
+                                    </div>
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-6 border-t bg-gray-50">
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={closeModal}
+                                    className="px-4 py-2 rounded-lg font-semibold border-2"
+                                    style={{ borderColor: '#d32f2f', color: '#d32f2f' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={saveChanges}
+                                    disabled={saving}
+                                    className="px-6 py-2 rounded-lg font-semibold text-white flex items-center gap-2"
+                                    style={{ backgroundColor: saving ? '#ccc' : '#2b8a3e' }}
+                                >
+                                    <FaSave /> {saving ? 'Saving...' : 'Save Changes'}
+                                </button>
                             </div>
                         </div>
                     </div>
-                )}
-
-                {/* No Profile State */}
-                {!profile && !loading && (
-                    <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-                        <p className="text-gray-600 text-lg">Search for a student or alumni to view and edit their profile</p>
-                    </div>
-                )}
-            </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }
