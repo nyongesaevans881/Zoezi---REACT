@@ -3,6 +3,7 @@ import { motion } from "framer-motion"
 import { FaRegCheckCircle, FaStar, FaInfoCircle, FaClock, FaUsers, FaCertificate } from "react-icons/fa"
 import { Link } from "react-router-dom"
 import { useState } from "react"
+import { GoDotFill } from "react-icons/go";
 
 export default function CourseCard({ course, index = 0, showAllDetails = true }) {
   const [showInfoModal, setShowInfoModal] = useState(false)
@@ -71,7 +72,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
             {/* Course tier badge for online courses */}
             {course.courseType === "online" && course.courseTier && (
               <span className={`absolute bottom-0 left-0 px-3 py-1 border text-xs font-semibold ${getTierColor(course.courseTier)}`}>
-                <p className="capitalize font-bold">{course.courseTier} TIER</p>
+                <p className="capitalize font-bold flex items-center gap-1">{course.courseTier} <GoDotFill size={5}/> Zoezi Soma</p>
               </span>
             )}
           </div>
@@ -192,7 +193,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
                   </span>
                   {course.courseTier && (
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTierColor(course.courseTier)}`}>
-                      {course.courseTier.toUpperCase()} TIER
+                      {course.courseTier.toUpperCase()}
                     </span>
                   )}
                 </div>

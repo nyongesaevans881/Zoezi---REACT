@@ -209,7 +209,7 @@ export default function SearchMembers() {
             onError={(e) => (e.target.src = '/placeholder-profile.jpg')}
           />
           <div className="text-left">
-            <h3 className="profile-name">
+            <h3 className="profile-name uppercase">
               {profile.firstName} {profile.lastName}
             </h3>
 
