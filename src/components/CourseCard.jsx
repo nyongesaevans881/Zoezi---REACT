@@ -53,11 +53,11 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
             {/* Diagonal Ribbon for course type */}
             <div className="absolute top-10 -left-5 w-24">
               <div className={`absolute transform -translate-x-6 -translate-y-6 -rotate-45 w-32 h-4 flex items-center justify-center ${
-                course.courseType === "online" ? "bg-purple-500" : "bg-blue-500"
+                course.courseType === "online" ? "bg-purple-500" : course.courseType === "physical" ? "bg-blue-500" : "bg-green-500"
               }`}>
                 <span className="text-white text-[10px] font-semibold flex items-center gap-1">
                   <FaRegCheckCircle size={8} />
-                  {course.courseType === "online" ? "ONLINE" : "PHYSICAL"}
+                  {course.courseType === "online" ? "ONLINE" : course.courseType === "physical" ? "PHYSICAL" : "HYBRID"}
                 </span>
               </div>
             </div>
