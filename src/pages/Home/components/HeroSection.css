@@ -1,6 +1,6 @@
 .hero-section {
   position: relative;
-  height: 600px;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,3 +295,10 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+
+
+
+

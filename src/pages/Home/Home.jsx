@@ -158,6 +158,8 @@ export default function Home() {
       </section>
 
       <GalleryComponent images={[
+        "/gallery/10.jpg",
+        "/gallery/11.jpg",
         "/hero.jpg",
         "/gallery/1.jpg",
         "/gallery/5.jpg",

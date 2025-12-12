@@ -11,9 +11,8 @@ export default function Footer() {
         <div className="footer-grid">
           {/* About Section */}
           <div className="footer-section">
-            <div className="footer-logo">
-              <span className="footer-logo-text">ZOEZI</span>
-              <span className="footer-logo-subtext">SCHOOL</span>
+            <div className="">
+     <img src="/primary-logo.png" alt="" className="h-10" />
             </div>
             <p>
               Excellence in fitness and wellness education. Transforming careers, building professionals, shaping the
@@ -49,7 +48,7 @@ export default function Footer() {
             </div>
             <div className="contact-item">
               <FaEnvelope className="contact-icon" />
-              <a href="mailto:info@zoezi.co.ke">info@zoezi.co.ke</a>
+              <a href="mailto:info@zoezischool.com">info@zoezischool.com</a>
             </div>
             <div className="contact-item">
               <FaMapMarkerAlt className="contact-icon" />
