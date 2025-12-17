@@ -59,7 +59,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
                 {/* <div className="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-purple-900/60"></div> */}
 
                 {/* Main Course Badge */}
-                <div className="absolute top-4 left-4 bg-brand-yellow text-white px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2">
+                <div className="absolute top-4 left-4 bg-brand-yellow text-white px-4 py-2 rounded-full font-bold text-[10px] flex items-center gap-2">
                   <FaStar className="animate-pulse" />
                   POPULAR COURSE
                   <FaStar className="animate-pulse" />
@@ -67,7 +67,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
 
                 {/* Course Type Badge */}
                 <div className="absolute top-4 right-4">
-                  <div className={`px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 ${course.courseType === "online" ? "bg-purple-600/90 text-white" : course.courseType === "physical" ? "bg-blue-600/90 text-white" : "bg-green-600/90 text-white"}`}>
+                  <div className={`px-4 py-2 rounded-full font-bold text-[10px] flex items-center gap-2 ${course.courseType === "online" ? "bg-purple-600/90 text-white" : course.courseType === "physical" ? "bg-blue-600/90 text-white" : "bg-green-600/90 text-white"}`}>
                     <FaRegCheckCircle />
                     {course.courseType === "online" ? "ONLINE" : course.courseType === "physical" ? "PHYSICAL" : "HYBRID"}
                   </div>
@@ -107,7 +107,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
                     </div>
                     <div>
                       <p className="font-semibold text-gray-800">Format</p>
-                      <p className="text-gray-600 capitalize">{course.courseType}</p>
+                      <p className="text-gray-600 capitalize">{course.courseType === "both" ? 'Physical & Online' : course.courseType}</p>
                     </div>
                   </div>
 
@@ -135,6 +135,11 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
                 </div>
               </div>
 
+
+            </div>
+
+            {/* Right Column - Pricing & CTA */}
+            <div className="space-y-6">
               {/* Quick Description */}
               <div>
                 <h4 className="text-lg font-bold text-gray-800 mb-3">Overview</h4>
@@ -147,54 +152,6 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
                 >
                   Read more details <FaArrowRight size={12} />
                 </button>
-              </div>
-            </div>
-
-            {/* Right Column - Pricing & CTA */}
-            <div className="space-y-6">
-              {/* Pricing Section */}
-              <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border-2 border-blue-200 p-6">
-                <h4 className="text-xl font-bold text-gray-800 mb-4">Course Investment</h4>
-
-                {hasActiveOffer(course) ? (
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <div className="text-4xl font-bold text-gray-900 mb-1">
-                        KES {course.offerPrice?.toLocaleString()}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-4 border-t border-gray-200">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Original Price:</span>
-                        <span className="text-lg line-through text-gray-400">KES {course.courseFee?.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">You Save:</span>
-                        <span className="text-lg font-bold text-red-600">
-                          KES {(course.courseFee - course.offerPrice)?.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Discount:</span>
-                        <span className="text-lg font-bold text-red-600">
-                          {calculateDiscountPercentage(course)}% OFF
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-gray-900 mb-2">
-                      {course.courseFee === 0 ? 'FREE' : `KES ${course.courseFee?.toLocaleString()}`}
-                    </div>
-                    {course.courseFee === 0 ? (
-                      <div className="text-lg text-green-600 font-bold">No Cost Enrollment</div>
-                    ) : (
-                      <div className="text-sm text-gray-600">Full Course Access</div>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* CTA Buttons */}
