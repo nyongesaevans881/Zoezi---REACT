@@ -27,7 +27,7 @@ export default function SuccessModal({ onClose }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 1000,
+        zIndex: 999999,
       }}
       onClick={handleClose}
     >
@@ -54,11 +54,20 @@ export default function SuccessModal({ onClose }) {
           <FaRegCircleCheck className="w-fit mx-auto" style={{ fontSize: "4rem", color: "#d4a644" }} />
         </motion.div>
 
-        <h2 style={{ color: "#2b2520", marginBottom: "1rem", fontSize: "1.8rem" }}>Application Submitted!</h2>
+        <h2 style={{ color: "#2b2520", marginBottom: "1rem", fontSize: "1.8rem" }}>Success!</h2>
 
         <p style={{ color: "#666", marginBottom: "1.5rem", lineHeight: "1.6", fontSize: "1rem" }}>
-          Thank you for applying to Nairobi Zoezi Institute. We have received your application and will review it
-          shortly. You will receive an email confirmation and further instructions soon.
+          Thank you for applying to Nairobi Zoezi Institute. Your Information is pending approval. <br />
+        </p>
+
+        <p className="mb-3">
+          In the mean time you have access to: <br />
+         <span className="font-bold"> ✅ Alumni Dashboard Via Login Page <br />
+          ✅ Your Name Appears in the Alumni List <br /></span>
+        </p> 
+
+        <p className="mb-3">
+          However if admin dicovers any misleading information provided your account may be rejected.
         </p>
 
         <p style={{ color: "#999", marginBottom: "2rem", fontSize: "0.9rem" }}>

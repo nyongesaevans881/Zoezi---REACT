@@ -5,11 +5,13 @@ import { motion } from "framer-motion"
 import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
 import SuccessModal from "../../components/SuccessModal"
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6"
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL
 
 export default function AlumniRegistration() {
   const navigate = useNavigate()
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
   const [formData, setFormData] = useState({
     // Basic Information
     firstName: "",
@@ -20,7 +22,8 @@ export default function AlumniRegistration() {
     confirmPassword: "",
     dateOfBirth: "",
     gender: "",
-    
+    admnNumber: "",
+
     // Education Info (For school records only - not public)
     qualification: "",
     course: "",
@@ -31,26 +34,26 @@ export default function AlumniRegistration() {
     citizenship: "",
     idNumber: "",
     kcseGrade: "",
-    
+
     // How You Heard About Us
     howHeardAbout: [],
     otherSource: "",
-    
+
     // Financial Information
     feePayer: "",
     feePayerPhone: "",
-    
+
     // Next of Kin
     nextOfKinName: "",
     nextOfKinRelationship: "",
     nextOfKinPhone: "",
-    
+
     // Professional Information (Public Profile)
     graduationDate: "",
     currentLocation: "",
     bio: "",
     practiceStatus: "active",
-    
+
     // Terms
     agreedToTerms: false,
   })
@@ -78,8 +81,8 @@ export default function AlumniRegistration() {
     if (type === "checkbox" && name === "howHeardAbout") {
       setFormData((prev) => ({
         ...prev,
-        howHeardAbout: checked 
-          ? [...prev.howHeardAbout, value] 
+        howHeardAbout: checked
+          ? [...prev.howHeardAbout, value]
           : prev.howHeardAbout.filter((item) => item !== value),
       }))
     } else if (type === "checkbox") {
@@ -93,7 +96,7 @@ export default function AlumniRegistration() {
         [name]: value,
       }))
     }
-    
+
     // Clear error for this field
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }))
@@ -115,33 +118,34 @@ export default function AlumniRegistration() {
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match"
     if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required"
     if (!formData.gender) newErrors.gender = "Gender is required"
-    
+
     // Education Info
     if (!formData.qualification) newErrors.qualification = "Highest qualification is required"
     if (!formData.course) newErrors.course = "Course selection is required"
+    if (!formData.admnNumber) newErrors.admnNumber = "Admission Number is required"
     if (!formData.citizenship) newErrors.citizenship = "Citizenship is required"
     if (!formData.idNumber.trim()) newErrors.idNumber = "ID/Passport number is required"
     if (!formData.kcseGrade.trim()) newErrors.kcseGrade = "Highest education score is required"
-    
+
     // How You Heard
     if (formData.howHeardAbout.length === 0) newErrors.howHeardAbout = "Please select how you heard about us"
     if (formData.howHeardAbout.includes("Other") && !formData.otherSource.trim()) {
       newErrors.otherSource = "Please specify the source"
     }
-    
+
     // Training Info
     if (!formData.trainingMode) newErrors.trainingMode = "Training mode is required"
     if (!formData.graduationDate) newErrors.graduationDate = "Graduation date is required"
-    
+
     // Financial
     if (!formData.feePayer.trim()) newErrors.feePayer = "Fee payer information is required"
     if (!formData.feePayerPhone.trim()) newErrors.feePayerPhone = "Fee payer phone is required"
-    
+
     // Next of Kin
     if (!formData.nextOfKinName.trim()) newErrors.nextOfKinName = "Next of kin name is required"
     if (!formData.nextOfKinRelationship.trim()) newErrors.nextOfKinRelationship = "Next of kin relationship is required"
     if (!formData.nextOfKinPhone.trim()) newErrors.nextOfKinPhone = "Next of kin phone is required"
-    
+
     // Terms
     if (!formData.agreedToTerms) newErrors.agreedToTerms = "You must agree to the rules and regulations"
 
@@ -154,7 +158,7 @@ export default function AlumniRegistration() {
     const newErrors = validateForm()
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
-      toast.error("Please fill in all required fields correctly")
+      toast.error("Please fix the errors in form before subsmission");
       return
     }
 
@@ -171,6 +175,8 @@ export default function AlumniRegistration() {
         },
         body: JSON.stringify(submitData),
       })
+
+      console.log(`server response`, response);
 
       const data = await response.json()
 
@@ -202,6 +208,7 @@ export default function AlumniRegistration() {
         citizenship: "",
         idNumber: "",
         kcseGrade: "",
+        admnNumber: "",
         howHeardAbout: [],
         otherSource: "",
         feePayer: "",
@@ -216,9 +223,9 @@ export default function AlumniRegistration() {
         agreedToTerms: false,
       })
       setErrors({})
-      
+
       toast.success("Alumni registration successful!")
-      
+
     } catch (error) {
       console.error("Error registering alumni:", error)
       toast.error(error.message || "Failed to register. Please try again.")
@@ -231,9 +238,9 @@ export default function AlumniRegistration() {
     <>
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="bg-white shadow-xl rounded-2xl overflow-hidden"
           >
@@ -269,9 +276,8 @@ export default function AlumniRegistration() {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.firstName ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.firstName ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="Enter your first name"
                     />
                     {errors.firstName && (
@@ -290,9 +296,8 @@ export default function AlumniRegistration() {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.lastName ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.lastName ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="Enter your last name"
                     />
                     {errors.lastName && (
@@ -311,9 +316,8 @@ export default function AlumniRegistration() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.email ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.email ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="you@example.com"
                     />
                     {errors.email && (
@@ -332,9 +336,8 @@ export default function AlumniRegistration() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.phone ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.phone ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="+254712345678"
                     />
                     {errors.phone && (
@@ -347,17 +350,21 @@ export default function AlumniRegistration() {
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                       Password <span className="text-[#d4a644]">*</span>
                     </label>
-                    <input
-                      type="password"
-                      id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.password ? "border-red-500" : "border-gray-300"
-                      }`}
-                      placeholder="Minimum 6 characters"
-                    />
+                    <div className={`flex items-center w-full pr-2 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.password ? "border-red-500" : "border-gray-300"
+                      }`}>
+                      <input
+                        type={showLoginPassword ? "text" : "password"}
+                        id="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 outline-none border-none"
+                        placeholder="Minimum 6 characters"
+                      />
+                      <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)}>
+                        {showLoginPassword ? (<FaRegEye />) : (<FaRegEyeSlash />)}
+                      </button>
+                    </div>
                     {errors.password && (
                       <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                     )}
@@ -368,17 +375,21 @@ export default function AlumniRegistration() {
                     <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                       Confirm Password <span className="text-[#d4a644]">*</span>
                     </label>
-                    <input
-                      type="password"
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.confirmPassword ? "border-red-500" : "border-gray-300"
-                      }`}
-                      placeholder="Re-enter your password"
-                    />
+                    <div className={`flex items-center w-full pr-2 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.confirmPassword ? "border-red-500" : "border-gray-300"
+                      }`}>
+                      <input
+                        type={showLoginPassword ? "text" : "password"}
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                         className="w-full px-4 py-3 outline-none border-none"
+                        placeholder="Re-enter your password"
+                      />
+                      <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)}>
+                        {showLoginPassword ? (<FaRegEye />) : (<FaRegEyeSlash />)}
+                      </button>
+                    </div>
                     {errors.confirmPassword && (
                       <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
                     )}
@@ -395,9 +406,8 @@ export default function AlumniRegistration() {
                       name="dateOfBirth"
                       value={formData.dateOfBirth}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.dateOfBirth ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.dateOfBirth ? "border-red-500" : "border-gray-300"
+                        }`}
                     />
                     {errors.dateOfBirth && (
                       <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth}</p>
@@ -414,9 +424,8 @@ export default function AlumniRegistration() {
                       name="gender"
                       value={formData.gender}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.gender ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.gender ? "border-red-500" : "border-gray-300"
+                        }`}
                     >
                       <option value="">Select Gender</option>
                       <option value="male">Male</option>
@@ -436,7 +445,7 @@ export default function AlumniRegistration() {
                   Education Information
                 </h3>
                 <p className="text-gray-600 mb-4 text-sm italic">
-                  This information is for school records only and will not be displayed on your public profile
+                  Some of this information is for school records only and will not be displayed on your public profile
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -450,9 +459,8 @@ export default function AlumniRegistration() {
                       name="qualification"
                       value={formData.qualification}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.qualification ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.qualification ? "border-red-500" : "border-gray-300"
+                        }`}
                     >
                       <option value="">Select Qualification</option>
                       <option value="kcse">KCSE</option>
@@ -476,9 +484,8 @@ export default function AlumniRegistration() {
                       name="course"
                       value={formData.course}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.course ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.course ? "border-red-500" : "border-gray-300"
+                        }`}
                     >
                       <option value="">Select Course</option>
                       {courses.map((course) => (
@@ -503,9 +510,8 @@ export default function AlumniRegistration() {
                       name="citizenship"
                       value={formData.citizenship}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.citizenship ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.citizenship ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="e.g., Kenyan"
                     />
                     {errors.citizenship && (
@@ -524,9 +530,8 @@ export default function AlumniRegistration() {
                       name="idNumber"
                       value={formData.idNumber}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.idNumber ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.idNumber ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="e.g., 12345678"
                     />
                     {errors.idNumber && (
@@ -545,9 +550,8 @@ export default function AlumniRegistration() {
                       name="kcseGrade"
                       value={formData.kcseGrade}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.kcseGrade ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.kcseGrade ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="e.g., KCSE: A, Diploma: Distinction"
                     />
                     <p className="mt-1 text-xs text-gray-500">
@@ -558,7 +562,7 @@ export default function AlumniRegistration() {
                     )}
                   </div>
 
-                  {/* Training Mode */}
+                  {/* Training Mode has to be a dropdown */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Training Mode <span className="text-[#d4a644]">*</span>
@@ -579,6 +583,17 @@ export default function AlumniRegistration() {
                         <input
                           type="radio"
                           name="trainingMode"
+                          value="hybrid"
+                          checked={formData.trainingMode === "hybrid"}
+                          onChange={handleChange}
+                          className="h-4 w-4 text-[#d4a644] border-gray-300 focus:ring-[#d4a644]"
+                        />
+                        <span className="ml-2 text-gray-700">Hybrid</span>
+                      </label>
+                      <label className="inline-flex items-center">
+                        <input
+                          type="radio"
+                          name="trainingMode"
                           value="Online"
                           checked={formData.trainingMode === "Online"}
                           onChange={handleChange}
@@ -589,6 +604,26 @@ export default function AlumniRegistration() {
                     </div>
                     {errors.trainingMode && (
                       <p className="mt-1 text-sm text-red-600">{errors.trainingMode}</p>
+                    )}
+                  </div>
+
+                  {/* Admn Number */}
+                  <div>
+                    <label htmlFor="admnNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                      Assigned Admission Number <span className="text-[#d4a644]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="admnNumber"
+                      name="admnNumber"
+                      value={formData.admnNumber}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.citizenship ? "border-red-500" : "border-gray-300"
+                        }`}
+                      placeholder="e.g., DFS-001-25"
+                    />
+                    {errors.admnNumber && (
+                      <p className="mt-1 text-sm text-red-600">{errors.admnNumber}</p>
                     )}
                   </div>
 
@@ -603,9 +638,8 @@ export default function AlumniRegistration() {
                       name="graduationDate"
                       value={formData.graduationDate}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.graduationDate ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.graduationDate ? "border-red-500" : "border-gray-300"
+                        }`}
                     />
                     {errors.graduationDate && (
                       <p className="mt-1 text-sm text-red-600">{errors.graduationDate}</p>
@@ -656,9 +690,8 @@ export default function AlumniRegistration() {
                         name="otherSource"
                         value={formData.otherSource}
                         onChange={handleChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                          errors.otherSource ? "border-red-500" : "border-gray-300"
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.otherSource ? "border-red-500" : "border-gray-300"
+                          }`}
                         placeholder="Please specify the source"
                       />
                       {errors.otherSource && (
@@ -675,7 +708,7 @@ export default function AlumniRegistration() {
                   Professional Information
                 </h3>
                 <p className="text-gray-600 mb-4 text-sm">
-                  This information may appear on your public profile
+                  This information may appear on your public profile to help potential clients discover you.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -750,9 +783,8 @@ export default function AlumniRegistration() {
                       name="feePayer"
                       value={formData.feePayer}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.feePayer ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.feePayer ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="e.g., Self, Parent, Employer"
                     />
                     {errors.feePayer && (
@@ -771,9 +803,8 @@ export default function AlumniRegistration() {
                       name="feePayerPhone"
                       value={formData.feePayerPhone}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.feePayerPhone ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.feePayerPhone ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="+254712345678"
                     />
                     {errors.feePayerPhone && (
@@ -801,9 +832,8 @@ export default function AlumniRegistration() {
                       name="nextOfKinName"
                       value={formData.nextOfKinName}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.nextOfKinName ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.nextOfKinName ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="Full name"
                     />
                     {errors.nextOfKinName && (
@@ -822,9 +852,8 @@ export default function AlumniRegistration() {
                       name="nextOfKinRelationship"
                       value={formData.nextOfKinRelationship}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.nextOfKinRelationship ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.nextOfKinRelationship ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="e.g., Mother, Father, Spouse"
                     />
                     {errors.nextOfKinRelationship && (
@@ -843,9 +872,8 @@ export default function AlumniRegistration() {
                       name="nextOfKinPhone"
                       value={formData.nextOfKinPhone}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${
-                        errors.nextOfKinPhone ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#d4a644] focus:border-[#d4a644] outline-none transition ${errors.nextOfKinPhone ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="+254712345678"
                     />
                     {errors.nextOfKinPhone && (
@@ -860,7 +888,7 @@ export default function AlumniRegistration() {
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
                   Rules and Regulations
                 </h3>
-                
+
                 <div className="space-y-3 text-gray-600 mb-4">
                   <p>By registering as an alumni, you agree to:</p>
                   <ul className="list-disc pl-5 space-y-2">
@@ -870,6 +898,7 @@ export default function AlumniRegistration() {
                     <li>Participate in continuing professional development when required</li>
                     <li>Respect the privacy and confidentiality of the alumni network</li>
                   </ul>
+                  <p>Your Account Will not be approved if Admin Discovers any misleading information</p>
                 </div>
 
                 <label className="flex items-start space-x-3">
@@ -895,11 +924,10 @@ export default function AlumniRegistration() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full md:w-auto px-8 py-4 text-lg font-semibold text-white rounded-lg transition-all duration-300 ${
-                    isLoading
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-[#d4a644] to-[#b38d38] hover:from-[#b38d38] hover:to-[#94752d] shadow-lg hover:shadow-xl"
-                  }`}
+                  className={`w-full md:w-auto px-8 py-4 text-lg font-semibold text-white rounded-lg transition-all duration-300 ${isLoading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-[#d4a644] to-[#b38d38] hover:from-[#b38d38] hover:to-[#94752d] shadow-lg hover:shadow-xl"
+                    }`}
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center">
@@ -913,7 +941,7 @@ export default function AlumniRegistration() {
                     "Register as Alumni"
                   )}
                 </button>
-                
+
                 <p className="mt-4 text-gray-600 text-sm">
                   Already have an account?{" "}
                   <button
@@ -931,7 +959,7 @@ export default function AlumniRegistration() {
       </div>
 
       {showSuccess && (
-        <SuccessModal 
+        <SuccessModal
           onClose={() => {
             setShowSuccess(false)
             navigate("/login")

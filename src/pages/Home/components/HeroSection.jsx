@@ -149,7 +149,7 @@ export default function HeroSection() {
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate("/login")}
             >
-              📚 Enroll into Zoezi Soma🎓
+              📚 Enroll Zoezi Soma<span className="text-xl">→</span>
             </motion.button>
           </div>
         </motion.div>
