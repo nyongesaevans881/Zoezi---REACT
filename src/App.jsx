@@ -38,6 +38,7 @@ import TutorDashboard from "./pages/UserDashboard/TutorDash/TutorDashboard"
 import AlumniDashboard from "./pages/UserDashboard/AlumniDash/AlumniDashboard"
 import AdminCourses from "./pages/Admin/courses/AdminCourses";
 import AdminFinance from "./pages/Admin/Finance/AdminFinance";
+import AlumniRegistration from "./pages/Alumni/AlumniRegistration";
 
 
 function App() {
@@ -63,6 +64,7 @@ function App() {
                   <Route path="/profile-detail" element={<ProfileDetail />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/register" element={<AlumniRegistration />} />
 
                   <Route
                     path="/dashboard"

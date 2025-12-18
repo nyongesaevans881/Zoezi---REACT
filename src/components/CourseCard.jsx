@@ -198,7 +198,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
               className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             >
               {/* Modal Header */}
-              <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
                 <div>
                   <h3 className="text-2xl font-bold text-primary-dark">{course.name}</h3>
                   <div className="flex items-center gap-2 mt-2">
@@ -259,37 +259,6 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
                   </div>
                 </div>
 
-                {/* Pricing Information */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-semibold text-primary-dark mb-3">Pricing Information</h4>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    {hasActiveOffer(course) ? (
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Original Price:</span>
-                          <span className="text-lg line-through text-gray-400">KES {course.courseFee?.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Special Offer Price:</span>
-                          <span className="text-2xl font-bold text-green-600">KES {course.offerPrice?.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">You Save:</span>
-                          <span className="text-lg font-bold text-primary-gold">
-                            KES {(course.courseFee - course.offerPrice)?.toLocaleString()} ({calculateDiscountPercentage(course)}%)
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Course Fee:</span>
-                        <span className={`text-2xl font-bold ${course.courseFee === 0 ? 'text-green-600' : 'text-primary-dark'}`}>
-                          {course.courseFee === 0 ? 'FREE' : `KES ${course.courseFee?.toLocaleString()}`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
 
                 {/* Ribbon Legend */}
                 <div className="mb-6">
@@ -329,7 +298,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
               </div>
 
               {/* Modal Footer */}
-              <div className="sticky bottom-0 bg-white border-t p-6 flex justify-end gap-3">
+              <div className="sticky bottom-0 bg-white border-t  border-gray-300 p-6 flex justify-end gap-3">
                 <button
                   onClick={() => setShowInfoModal(false)}
                   className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:border-gray-400 transition-colors"
@@ -522,7 +491,7 @@ export default function CourseCard({ course, index = 0, showAllDetails = true })
             className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
           >
             {/* Modal Header */}
-            <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-gray-300 p-6 flex justify-between items-center">
               <div>
                 <h3 className="text-2xl font-bold text-primary-dark">{course.name}</h3>
                 <div className="flex items-center gap-2 mt-2">
