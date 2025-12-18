@@ -165,7 +165,7 @@ export default function Navbar() {
     { label: "Who We Are", path: "/who-we-are" },
     { label: "Our Courses", path: "/what-we-do" },
     { label: "Apply Now", path: "/apply-now" },
-    { label: "Contact", path: "/contact" },
+    { label: "Register", path: "/register" },
   ]
 
   const socialIcons = [
