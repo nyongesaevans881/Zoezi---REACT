@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { FaEdit, FaSave, FaTimes, FaPlus, FaTrash, FaEye } from 'react-icons/fa';
+import { FaEdit, FaSave, FaTimes, FaPlus, FaTrash, FaEye, FaCheck } from 'react-icons/fa';
 import { CiSearch } from "react-icons/ci";
 import AdminLayout from '../AdminLayout/AdminLayout';
 import { Link } from "react-router-dom";
@@ -35,7 +35,7 @@ export default function AdminDetails() {
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState(null);
@@ -62,7 +62,7 @@ export default function AdminDetails() {
         if (searchQuery.trim() === '') {
             setFilteredStudents(students);
         } else {
-            const filtered = students.filter(student => 
+            const filtered = students.filter(student =>
                 student.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 student.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 student.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -268,9 +268,9 @@ export default function AdminDetails() {
 
                 const imageData = await imageResponse.json();
                 toast.success('Profile picture updated!');
-                
+
                 // Update the student in the list
-                setStudents(prev => prev.map(s => 
+                setStudents(prev => prev.map(s =>
                     s._id === selectedStudent._id ? imageData.data : s
                 ));
                 setSelectedStudent(imageData.data);
@@ -282,7 +282,7 @@ export default function AdminDetails() {
             let updatePayload = {};
             let section = '';
 
-            switch(activeTab) {
+            switch (activeTab) {
                 case 'info':
                     updatePayload = { admissionNumber: editData.admissionNumber };
                     section = 'info';
@@ -341,12 +341,12 @@ export default function AdminDetails() {
             }
 
             // Update the student in the list
-            setStudents(prev => prev.map(s => 
+            setStudents(prev => prev.map(s =>
                 s._id === selectedStudent._id ? result.data : s
             ));
             setSelectedStudent(result.data);
             toast.success('Changes saved successfully!');
-            
+
         } catch (error) {
             console.error('Save error:', error);
             toast.error(error.message || 'Failed to save changes');
@@ -354,6 +354,60 @@ export default function AdminDetails() {
             setSaving(false);
         }
     };
+
+
+    const handleQuickVerify = async (alumniId) => {
+        if (dataType !== 'alumni') return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/alumni/${alumniId}/verify`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Verification failed');
+            }
+
+            // Update the student in the list
+            setStudents(prev => prev.map(s =>
+                s._id === alumniId ? result.data : s
+            ));
+
+            toast.success('Alumni verified successfully!');
+        } catch (error) {
+            console.error('Verification error:', error);
+            toast.error(error.message || 'Failed to verify alumni');
+        }
+    };
+
+    const handleVerifyInModal = async (alumniId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/alumni/${alumniId}/verify`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Verification failed');
+    }
+
+    // Update the student in the list and modal
+    setStudents(prev => prev.map(s => 
+      s._id === alumniId ? result.data : s
+    ));
+    setSelectedStudent(result.data);
+    
+    toast.success('Alumni verified successfully!');
+  } catch (error) {
+    console.error('Verification error:', error);
+    toast.error(error.message || 'Failed to verify alumni');
+  }
+};
 
     return (
         <AdminLayout>
@@ -399,18 +453,18 @@ export default function AdminDetails() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setDataType('students')}
-                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${dataType === 'students' ? 'bg-primary-gold text-white' : 'bg-gray-100 text-gray-700'}`}
+                                className={`px-4 py-2 rounded-lg font-semibold transition-colors cursor-pointer ${dataType === 'students' ? 'bg-primary-gold text-white' : 'bg-gray-100 text-gray-700'}`}
                             >
                                 Students ({students.filter(s => !s.isAlumni).length})
                             </button>
                             <button
                                 onClick={() => setDataType('alumni')}
-                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${dataType === 'alumni' ? 'bg-primary-gold text-white' : 'bg-gray-100 text-gray-700'}`}
+                                className={`px-4 py-2 rounded-lg font-semibold transition-colors cursor-pointer ${dataType === 'alumni' ? 'bg-primary-gold text-white' : 'bg-gray-100 text-gray-700'}`}
                             >
                                 Alumni ({students.filter(s => s.isAlumni).length})
                             </button>
                         </div>
-                        
+
                         <button
                             onClick={fetchAllData}
                             disabled={loading}
@@ -441,6 +495,7 @@ export default function AdminDetails() {
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Student</th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Admission #</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Verification</th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -465,7 +520,7 @@ export default function AdminDetails() {
                                                     <div className="flex-shrink-0 h-10 w-10">
                                                         <img
                                                             className="h-10 w-10 rounded-full object-cover"
-                                                            src={student.profilePicture || 'https://via.placeholder.com/100'}
+                                                            src={student.profilePicture || '/placeholder-profile.jpg'}
                                                             alt={student.firstName}
                                                         />
                                                     </div>
@@ -483,10 +538,34 @@ export default function AdminDetails() {
                                                 {student.admissionNumber || 'N/A'}
                                             </td>
 
+                                            {/* Verification Status Column */}
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {dataType === 'alumni' ? (
+                                                    <div className="flex items-center">
+                                                        <div className={`w-3 h-3 rounded-full mr-2 ${student.adminVerified === false ? 'bg-red-500 animate-pulse' : 'bg-green-500'
+                                                            }`}></div>
+                                                        <span className={`text-sm font-medium ${student.adminVerified === false ? 'text-red-600' : 'text-green-600'
+                                                            }`}>
+                                                            {student.adminVerified === false ? 'Pending' : 'Verified'}
+                                                        </span>
+                                                        {student.adminVerified === false && (
+                                                            <button
+                                                                onClick={() => handleQuickVerify(student._id)}
+                                                                className="ml-3 text-xs bg-green-100 text-green-700 hover:bg-green-200 px-2 py-1 rounded transition-colors cursor-pointer"
+                                                            >
+                                                                Verify
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-gray-400 text-sm">N/A</span>
+                                                )}
+                                            </td>
+
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <button
                                                     onClick={() => openEditModal(student)}
-                                                    className="text-primary-gold hover:text-primary-yellow px-3 py-1 rounded-md font-semibold flex items-center gap-1"
+                                                    className="text-primary-gold hover:text-primary-yellow px-3 py-1 rounded-md font-semibold flex items-center gap-1 cursor-pointer"
                                                 >
                                                     <FaEdit /> Edit
                                                 </button>
@@ -549,7 +628,7 @@ export default function AdminDetails() {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <img
-                                        src={profileImagePreview || selectedStudent.profilePicture || 'https://via.placeholder.com/100'}
+                                        src={profileImagePreview || selectedStudent.profilePicture || '/placeholder-profile.jpg'}
                                         alt={`${selectedStudent.firstName} ${selectedStudent.lastName}`}
                                         className="w-16 h-16 rounded-lg object-cover border-2"
                                         style={{ borderColor: '#d4a644' }}
@@ -604,6 +683,34 @@ export default function AdminDetails() {
                                             placeholder="Enter admission number"
                                         />
                                     </div>
+
+                                    {/* In the Info tab section, after admission number field */}
+                                    {dataType === 'alumni' && selectedStudent && (
+                                        <div className="mt-6 p-4 border rounded-lg" style={{ borderColor: '#d4a644' }}>
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h4 className="text-sm font-semibold text-gray-700 mb-1">Admin Verification</h4>
+                                                    <p className="text-xs text-gray-500">
+                                                        {selectedStudent.adminVerified === false
+                                                            ? 'This alumni needs verification'
+                                                            : 'Alumni is verified'}
+                                                    </p>
+                                                </div>
+                                                {selectedStudent.adminVerified === false ? (
+                                                    <button
+                                                        onClick={() => handleVerifyInModal(selectedStudent._id)}
+                                                        className="px-4 py-2 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors flex items-center gap-2 cursor-pointer"
+                                                    >
+                                                        <FaCheck /> Verify Now
+                                                    </button>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 text-green-600">
+                                                        <FaCheck /> Verified
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -778,7 +885,7 @@ export default function AdminDetails() {
                                 <div className="space-y-4">
                                     <div className="flex flex-col items-center">
                                         <img
-                                            src={profileImagePreview || 'https://via.placeholder.com/200'}
+                                            src={profileImagePreview || '/placeholder-profile.jpg'}
                                             alt="Profile Preview"
                                             className="w-32 h-32 rounded-full object-cover border-4 mb-4"
                                             style={{ borderColor: '#d4a644' }}
