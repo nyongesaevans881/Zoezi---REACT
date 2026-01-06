@@ -10,6 +10,7 @@ import { FaRegPenToSquare } from "react-icons/fa6";
 import { MdAttachMoney } from "react-icons/md";
 import { useState, useEffect } from "react"
 import { FiSearch } from "react-icons/fi";
+import { ImBooks } from "react-icons/im";
 import "./AdminLayout.css"
 
 export default function AdminLayout({ children }) {
@@ -30,6 +31,7 @@ export default function AdminLayout({ children }) {
     { label: "Alumni", path: "/admin/alumni", icon: <LuGraduationCap /> },
     { label: "Subscriptions", path: "/admin/subscriptions", icon: <FaRegCreditCard /> },
     { label: "Settlements", path: "/admin/settlements", icon: <RiMoneyDollarBoxLine /> },
+    { label: "Zoezi Soma", path: "/admin/soma", icon: <ImBooks /> },
   ]
 
   const isActive = (path) => location.pathname === path

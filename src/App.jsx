@@ -39,6 +39,7 @@ import AlumniDashboard from "./pages/UserDashboard/AlumniDash/AlumniDashboard"
 import AdminCourses from "./pages/Admin/courses/AdminCourses";
 import AdminFinance from "./pages/Admin/Finance/AdminFinance";
 import AlumniRegistration from "./pages/Alumni/AlumniRegistration";
+import ElearningUsers from "./pages/Admin/Soma/ElearningUsers";
 
 
 function App() {
@@ -94,6 +95,7 @@ function App() {
         <Route path="/admin/details" element={<AdminDetails />} />
         <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
         <Route path="/admin/settlements" element={<AdminFinance />} />
+        <Route path="/admin/soma" element={<ElearningUsers />} />
 
         {/* User Dashboards - Type-Specific Routes */}
         <Route
