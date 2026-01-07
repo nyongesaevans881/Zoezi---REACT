@@ -45,43 +45,44 @@ export const useAdminAuth = () => {
     }
   }, []);
 
-  // Login function
-  const login = async (password) => {
-    try {
-      setIsChecking(true);
-      const response = await fetch(`${API_BASE_URL}/api/admin/auth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ password }),
-      });
+// Login function
+const login = async (username, password) => {
+  try {
+    setIsChecking(true);
+    const response = await fetch(`${API_BASE_URL}/api/admin/auth`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (response.ok && data.status === 'success') {
-        const authData = {
-          authenticated: true,
-          expiresAt: data.data.expiresAt,
-          authenticatedAt: new Date().toISOString()
-        };
-        
-        localStorage.setItem('adminAuth', JSON.stringify(authData));
-        setIsAuthenticated(true);
-        toast.success('Admin authentication successful!');
-        return true;
-      } else {
-        toast.error(data.message || 'Authentication failed');
-        return false;
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Network error. Please try again.');
+    if (response.ok && data.status === 'success') {
+      const authData = {
+        authenticated: true,
+        username: data.data.username,
+        expiresAt: data.data.expiresAt,
+        authenticatedAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem('adminAuth', JSON.stringify(authData));
+      setIsAuthenticated(true);
+      toast.success(`Welcome ${username}!`);
+      return true;
+    } else {
+      toast.error(data.message || 'Authentication failed');
       return false;
-    } finally {
-      setIsChecking(false);
     }
-  };
+  } catch (error) {
+    console.error('Login error:', error);
+    toast.error('Network error. Please try again.');
+    return false;
+  } finally {
+    setIsChecking(false);
+  }
+};
 
   // Logout function
   const logout = () => {

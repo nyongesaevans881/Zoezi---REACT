@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaUsers, FaMoneyBillWave, FaCheckCircle, FaClock } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { StudentDetailModal } from '../components/StudentDetailModal';
-import { UpdateFeeModal } from '../components/UpdateFeeModal';
+import { EnhancedUpdateFeeModal } from '../components/EnhancedUpdateFeeModal';
 import AdminLayout from "../AdminLayout/AdminLayout"
 import { Link } from "react-router-dom"
 
@@ -268,20 +268,18 @@ const AdminUpdateFee = () => {
                             KES {balance.toLocaleString()}
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex gap-2 justify-center">
+                            <div className="flex flex-col gap-2 justify-center">
                               <button
                                 onClick={() => handleViewDetails(student)}
-                                className="px-3 py-1 rounded-lg text-sm font-semibold text-white transition-colors"
-                                style={{ backgroundColor: '#d4a644' }}
+                                className="px-3 py-1 border border-primary-gold text-primary-gold rounded-lg text-sm font-semibold transition-colors cursor-pointer hover:bg-primary-gold hover:text-white transition-colors"
                               >
                                 View
                               </button>
                               <button
                                 onClick={() => handleUpdateFee(student)}
-                                className="px-3 py-1 rounded-lg text-sm font-semibold text-white transition-colors"
-                                style={{ backgroundColor: '#c9952f' }}
+                                className="px-3 py-1 bg-blue-600 rounded-lg text-sm font-semibold text-white transition-colors cursor-pointer"
                               >
-                                Payment
+                                Update
                               </button>
                             </div>
                           </td>
@@ -333,7 +331,7 @@ const AdminUpdateFee = () => {
           isOpen={detailModalOpen}
           onClose={() => setDetailModalOpen(false)}
         />
-        <UpdateFeeModal
+        <EnhancedUpdateFeeModal
           student={selectedStudent}
           isOpen={feeModalOpen}
           onClose={() => setFeeModalOpen(false)}

@@ -3,13 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { useAdminAuth } from "../../../hooks/useAdminAuth";
 import AdminAuthModal from "../components/AdminAuthModal";
 import { LuGraduationCap, LuUsers } from "react-icons/lu";
-import { IoDocumentAttachOutline } from "react-icons/io5";
 import { RiMoneyDollarBoxLine } from "react-icons/ri";
 import { MdOutlineDashboard } from "react-icons/md";
-import { FaRegPenToSquare } from "react-icons/fa6";
-import { MdAttachMoney } from "react-icons/md";
 import { useState, useEffect } from "react"
-import { FiSearch } from "react-icons/fi";
 import { ImBooks } from "react-icons/im";
 import "./AdminLayout.css"
 
@@ -19,7 +15,7 @@ export default function AdminLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [hasCheckedInitialAuth, setHasCheckedInitialAuth] = useState(false)
-  
+
   const { isAuthenticated, isChecking, login, logout, checkAuth } = useAdminAuth()
 
   const menuItems = [
@@ -42,7 +38,7 @@ export default function AdminLayout({ children }) {
       await checkAuth();
       setHasCheckedInitialAuth(true);
     };
-    
+
     initialCheck();
   }, [checkAuth]);
 
@@ -60,8 +56,8 @@ export default function AdminLayout({ children }) {
     }
   }, [isAuthenticated, showAuthModal]);
 
-  const handleLogin = async (password) => {
-    return await login(password);
+  const handleLogin = async (username, password) => {
+    return await login(username, password);
   };
 
   const handleModalClose = () => {
@@ -114,7 +110,7 @@ export default function AdminLayout({ children }) {
           <aside style={scrollStyle} className={`admin-sidebar ${sidebarOpen ? "open" : "closed"}`}>
             <div className="sidebar-header">
               <h2 className="sidebar-title">NZI ADMIN</h2>
-              <button 
+              <button
                 className="toggle-btn"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
               >
@@ -147,7 +143,16 @@ export default function AdminLayout({ children }) {
             <div className="admin-header">
               <h1>NZI Administration Panel</h1>
               <div className="admin-user">
-                <span>Admin User</span>
+                <span className="font-bold capitalize">
+                  {(() => {
+                    try {
+                      const authData = JSON.parse(localStorage.getItem('adminAuth'));
+                      return authData?.username || 'Admin User';
+                    } catch {
+                      return 'Admin User';
+                    }
+                  })()}
+                </span>
                 <div className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
                   ● Authenticated
                 </div>

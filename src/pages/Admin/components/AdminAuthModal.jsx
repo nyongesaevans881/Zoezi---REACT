@@ -3,20 +3,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 const AdminAuthModal = ({ isOpen, onClose, onAuthenticate, isChecking }) => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!password.trim()) {
-      toast.error('Please enter the admin password');
+    if (!username.trim() || !password.trim()) {
+      toast.error('Please enter both username and password');
       return;
     }
 
-    const success = await onAuthenticate(password);
+    const success = await onAuthenticate(username, password);
     if (success) {
+      setUsername('');
       setPassword('');
-      // Don't call onClose here - let the parent component handle it based on auth state
     }
   };
 
@@ -48,14 +49,31 @@ const AdminAuthModal = ({ isOpen, onClose, onAuthenticate, isChecking }) => {
                 Admin Authentication Required
               </h2>
               <p className="text-gray-600">
-                Please enter the admin password to access the administration panel.
+                Please enter your admin credentials to access the administration panel.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter username"
+                  autoComplete="username"
+                  disabled={isChecking}
+                  autoFocus
+                />
+              </div>
+              
+              <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Admin Password
+                  Password
                 </label>
                 <input
                   type="password"
@@ -63,10 +81,9 @@ const AdminAuthModal = ({ isOpen, onClose, onAuthenticate, isChecking }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter admin password"
+                  placeholder="Enter password"
                   autoComplete="current-password"
                   disabled={isChecking}
-                  autoFocus
                 />
               </div>
 

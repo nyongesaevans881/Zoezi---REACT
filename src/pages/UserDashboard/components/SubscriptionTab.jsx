@@ -7,7 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_SERVER_URL
 
 // Year options with discounts for bulk payment
 const YEAR_OPTIONS = [
-  { years: 1, amount: 1000, label: '1 Year', description: 'Basic subscription' },
+  { years: 1, amount: 1, label: '1 Year', description: 'Basic subscription' },
   { years: 2, amount: 1900, label: '2 Years', description: 'Save Ksh 100', discount: '5% OFF' },
   { years: 3, amount: 2700, label: '3 Years', description: 'Save Ksh 300', discount: '10% OFF' },
   { years: 5, amount: 4000, label: '5 Years', description: 'Save Ksh 1000', discount: '20% OFF' },
