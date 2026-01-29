@@ -16,7 +16,7 @@ export default function CoursesSection() {
       try {
         setLoading(true)
         const apiUrl = import.meta.env.VITE_SERVER_URL
-        const response = await fetch(`${apiUrl}/courses?limit=${displayLimit}&status=active`)
+        const response = await fetch(`${apiUrl}/courses?status=active`)
 
         if (!response.ok) {
           throw new Error(`Failed to fetch courses: ${response.status}`)
@@ -116,7 +116,7 @@ export default function CoursesSection() {
           >
             <Link
               to="/what-we-do"
-              className="inline-flex items-center gap-2 px-8 py-3 border-2 border-brand-gold text-brand-gold rounded-lg font-semibold hover:bg-brand-gold hover:text-white transition-all duration-200 group"
+              className="inline-flex items-center gap-2 px-8 py-3 bg-brand-gold border-2 border-brand-gold text-white rounded-lg font-semibold hover:bg-brand-gold hover:text-white transition-all duration-200 group"
             >
               Explore All {courses.length}+ Courses
               <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
