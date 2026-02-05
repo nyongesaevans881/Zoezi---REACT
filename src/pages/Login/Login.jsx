@@ -100,10 +100,10 @@ const handleLogin = async (e) => {
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden">
         {/* Image Side */}
         <div className="md:w-1/2 w-full h-64 md:h-auto flex items-center justify-center bg-brand-gold relative">
-          <div className='absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-4'>
+          <div className='absolute inset-0 bg-brand-gold flex flex-col items-center justify-center gap-4'>
             <h2 className='text-3xl text-white font-bold'>Don't have an Account?</h2>
             <p className='mx-5 text-sm text-white text-center text-gray-200'>Create a free account to access all courses offered by the Nairobi Zoezi Institute</p>
-            <button type="button" className="text-brand-gold font-semibold border-2 px-4 py-1 rounded-lg cursor-pointer" onClick={() => setShowRegister(true)}>
+            <button type="button" className="text-white font-semibold border-2 px-4 py-1 rounded-lg cursor-pointer" onClick={() => setShowRegister(true)}>
               Create Student Account
             </button>
           </div>

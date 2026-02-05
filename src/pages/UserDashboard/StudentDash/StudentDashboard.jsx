@@ -30,11 +30,11 @@ export default function StudentDashboard() {
       case 'courses':
         return <MyCourses userData={userData} setUserData={setUserData} refreshUserData={refreshUserData}/>
       case 'certifications':
-        return <StudentCertifications userData={userData} etUserData={setUserData} refreshUserData={refreshUserData}/>
+        return <StudentCertifications userData={userData} setUserData={setUserData} refreshUserData={refreshUserData}/>
       case 'subscription':
-        return <SubscriptionTab userData={userData} etUserData={setUserData} refreshUserData={refreshUserData}/>
+        return <SubscriptionTab userData={userData} setUserData={setUserData} refreshUserData={refreshUserData}/>
       case 'cpd':
-        return <CPDHistoryTab userData={userData} etUserData={setUserData} refreshUserData={refreshUserData}/>
+        return <CPDHistoryTab userData={userData} setUserData={setUserData} refreshUserData={refreshUserData}/>
       default:
         return <Dashboard userData={userData} setUserData={setUserData} userType="student" refreshUserData={refreshUserData}/>
     }

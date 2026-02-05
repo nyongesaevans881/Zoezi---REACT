@@ -13,6 +13,7 @@ export default function DashboardLayout({ userType, children }) {
   const { user, logout, checkSessionExpiry } = useAuth()
   const [userData, setUserData] = useState(null)
   const [isLoadingPage, setIsLoadingPage] = useState(true)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   useEffect(() => {
     refreshUserData();
@@ -105,6 +106,17 @@ export default function DashboardLayout({ userType, children }) {
     logout()
   }
 
+  const openHelp = () => setHelpOpen(true)
+  const closeHelp = () => setHelpOpen(false)
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape' && helpOpen) closeHelp()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [helpOpen])
+
   if (isLoadingPage) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-primary">
@@ -144,6 +156,78 @@ export default function DashboardLayout({ userType, children }) {
           </div>
         </main>
       </div>
+
+      {/* Help Button (visible only to students) */}
+      {userType === 'student' && (
+        <>
+          <button
+            onClick={openHelp}
+            aria-label="Open help"
+            className="fixed -right-4 top-1/2 z-40 transform -rotate-90 -translate-y-1/2 bg-brand-gold text-primary-dark font-semibold px-4 py-1 shadow-lg hover:opacity-95 cursor-pointer"
+          >
+            ?Help
+          </button>
+
+          {/* Help Modal */}
+          {helpOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div
+                className="absolute inset-0 bg-black/40"
+                onClick={closeHelp}
+                aria-hidden
+              />
+
+              <div
+                role="dialog"
+                aria-modal="true"
+                className="relative z-50 w-full max-w-3xl sm:max-w-2xl mx-4 bg-white rounded-xl shadow-2xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-5 bg-brand-gold/10 border-b border-brand-gold/20">
+                  <div>
+                    <h3 className="text-xl font-semibold text-primary-dark">How to enroll — Quick Help</h3>
+                    <p className="text-sm text-primary-dark/80">Step-by-step guide to enroll and access your course</p>
+                  </div>
+                  <button onClick={closeHelp} aria-label="Close" className="text-gray-600 hover:text-gray-900 p-2 rounded-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="p-6 text-sm text-gray-800 space-y-6">
+                  <div className="space-y-2">
+                    <p className="font-medium">1. To enroll in a course, please visit the <strong>COURSES</strong> tab on the sidebar menu.</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="font-medium">2. From the available courses:</p>
+
+                    <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-md p-4">
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Click "Enroll now"</li>
+                        <li>Enter the phone number you will use to pay for the course</li>
+                        <li>An STK prompt will be sent to your phone</li>
+                        <li>Enter your PIN to complete</li>
+                        <li>Click "Check payment" status if necessary</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="font-medium">3. On successful enrollment, stay put:</p>
+                    <ul className="list-disc pl-6 space-y-1">
+                      <li>Admin will assign you to a tutor (usually within 24 hours) — you will be notified</li>
+                      <li>You will get access to course materials (check the "My courses" tab)</li>
+                      <li>A new tab with the course name will appear — access course content there</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }
