@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { FaDownload, FaCheckCircle, FaClock, FaTimes } from 'react-icons/fa'
+import { FaDownload, FaCheckCircle, FaClock, FaTimes, FaSpinner } from 'react-icons/fa'
 
 const StudentCertifications = ({ userData }) => {
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedCourse, setSelectedCourse] = useState(null)
+  const [downloadingCourseId, setDownloadingCourseId] = useState(null)
   const API = import.meta.env.VITE_SERVER_URL
   const userType = localStorage.getItem('userType')
 
@@ -41,7 +42,9 @@ const StudentCertifications = ({ userData }) => {
   }
 
   const downloadCertificate = async (course) => {
+    const id = course.courseId || course._id || course.id
     try {
+      setDownloadingCourseId(id)
       // Load pdf-lib dynamically
       const { PDFDocument, rgb } = await import('pdf-lib')
 
@@ -90,6 +93,8 @@ const StudentCertifications = ({ userData }) => {
     } catch (err) {
       console.error('Certificate download error:', err)
       toast.error('Failed to download certificate. Please try again.')
+    } finally {
+      setDownloadingCourseId(null)
     }
   }
 
@@ -273,10 +278,22 @@ const StudentCertifications = ({ userData }) => {
                 {isCertified && (
                   <button
                     onClick={() => downloadCertificate(course)}
-                    className="w-full bg-gradient-to-r from-primary-gold to-accent-orange hover:opacity-90 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    disabled={downloadingCourseId === (course.courseId || course._id || course.id)}
+                    className={`w-full bg-gradient-to-r from-primary-gold to-accent-orange hover:opacity-90 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-md ${
+                      downloadingCourseId === (course.courseId || course._id || course.id) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+                    }`}
                   >
-                    <FaDownload size={16} />
-                    Download Certificate
+                    {downloadingCourseId === (course.courseId || course._id || course.id) ? (
+                      <>
+                        <FaSpinner className="animate-spin mr-2" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <FaDownload size={16} />
+                        Download Certificate
+                      </>
+                    )}
                   </button>
                 )}
 
