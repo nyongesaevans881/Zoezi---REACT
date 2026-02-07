@@ -155,7 +155,7 @@ const StudentCertifications = ({ userData }) => {
   }
 
   return (
-    <div className="min-h-screen space-y-6">
+    <div className="min-h-screen space-y-6 pb-25">
       <div>
         <h1 className="font-bold text-3xl md:text-4xl text-primary-dark">📜 My Certifications</h1>
         <p className="text-gray-600 mt-2">Track your course progress, payment status, and download certificates</p>
