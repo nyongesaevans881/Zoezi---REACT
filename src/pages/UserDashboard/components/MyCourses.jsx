@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { FaClock, FaBook } from 'react-icons/fa'
+import { FaClock, FaBook, FaTimes, FaRegCheckCircle } from 'react-icons/fa'
 import MpesaPayment from '../../../components/MpesaPayment'
 import toast from 'react-hot-toast'
 
@@ -11,6 +11,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
   const [loading, setLoading] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const userType = localStorage.getItem('userType')
 
   useEffect(() => {
@@ -147,7 +148,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
         await fetchAvailableCourses();
       }
 
-      toast.success('Enrolled successfully in free course!');
+      setShowSuccessModal(true);
 
     } catch (err) {
       console.error('Free enrollment error:', err);
@@ -198,7 +199,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
 
       setShowModal(false);
       setSelectedCourse(null);
-      toast.success('Enrolled successfully!');
+      setShowSuccessModal(true);
 
     } catch (err) {
       console.error('Enrollment error:', err);
@@ -249,6 +250,8 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
               const paymentData = c.payment || {};
               const tutorData = c.tutor;
 
+              console.log('Course Data:', courseData);
+
               return (
                 <div
                   key={c._id}
@@ -256,10 +259,10 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
                 >
                   {/* Course Image */}
                   <div className="h-40 bg-gray-200 relative overflow-hidden">
-                    {courseData.coverImage?.url ? (
+                    {c.coverImage?.url ? (
                       <img
-                        src={courseData.coverImage.url}
-                        alt={courseData.name || 'Course'}
+                        src={c.coverImage.url}
+                        alt={c.name || 'Course'}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -343,6 +346,14 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
                     <p className="text-xs text-light">
                       Enrolled: {new Date(c.enrolledAt || Date.now()).toLocaleDateString()}
                     </p>
+
+                    {/* What Next Button */}
+                    <button
+                      onClick={() => setShowSuccessModal(true)}
+                      className="w-full mt-4 px-4 py-2 bg-brand-gold text-white font-semibold rounded-lg hover:bg-brand-yellow transition-all duration-300 hover:shadow-lg"
+                    >
+                      What Next? →
+                    </button>
                   </div>
                 </div>
               );
@@ -458,6 +469,158 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
           onSuccess={handlePaymentSuccess}
         />
       )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <EnrollmentSuccessModal
+          onClose={() => setShowSuccessModal(false)}
+        />
+      )}
     </div>
+  )
+}
+
+// Success Modal Component
+function EnrollmentSuccessModal({ onClose }) {
+  useEffect(() => {
+    const handleEscapeKey = (e) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleEscapeKey)
+    return () => window.removeEventListener('keydown', handleEscapeKey)
+  }, [onClose])
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/50 z-9999 transition-opacity duration-300 h-full"
+        onClick={handleBackdropClick}
+      />
+      
+      {/* Modal */}
+      <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
+          {/* Header */}
+          <div className="sticky top-0 bg-gradient-to-r from-primary-gold to-accent-yellow p-6 sm:p-8 flex items-start justify-between border-b-4 border-brand-gold">
+            <div className="flex-1">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+ Thank you for your payment! 
+              </h2>
+              <p className="text-brand-light text-sm sm:text-base flex items-center gap-2">
+                Your spot in the course is now secured                 <FaRegCheckCircle />
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="ml-4 p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              <FaTimes className="text-white text-xl" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 sm:p-8">
+            <div className="mb-8">
+              <p className="text-secondary text-center text-base sm:text-lg mb-6 font-semibold">
+                We've successfully received your payment. Here's what happens next:
+              </p>
+            </div>
+
+            {/* Steps */}
+            <div className="space-y-4">
+              <div className="flex gap-4 sm:gap-6">
+                <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-brand-gold text-white font-bold text-lg">
+                  1
+                </div>
+                <div className="flex-1 pt-1">
+                  <h3 className="font-bold text-brand-dark text-base sm:text-lg mb-1">
+                    Tutor Assignment
+                  </h3>
+                  <p className="text-secondary text-sm sm:text-base">
+                    Admin will assign you to a tutor who will take you through the course. This usually happens within 24 hours - (YOU WILL BE NOTIFIED VIA EMAIL).
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 sm:gap-6">
+                <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-brand-gold text-white font-bold text-lg">
+                  2
+                </div>
+                <div className="flex-1 pt-1">
+                  <h3 className="font-bold text-brand-dark text-base sm:text-lg mb-1">
+                    Access Your Portal
+                  </h3>
+                  <p className="text-secondary text-sm sm:text-base">
+                    Upon successful assignment, login into your student portal and check the "My Courses" tab below.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 sm:gap-6">
+                <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-brand-gold text-white font-bold text-lg">
+                  3
+                </div>
+                <div className="flex-1 pt-1">
+                  <h3 className="font-bold text-brand-dark text-base sm:text-lg mb-1">
+                    Find Your Course Content
+                  </h3>
+                  <p className="text-secondary text-sm sm:text-base">
+                    You'll find a new tab with the course name. This is where you'll find all the course content and materials.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 sm:gap-6">
+                <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-brand-gold text-white font-bold text-lg">
+                  4
+                </div>
+                <div className="flex-1 pt-1">
+                  <h3 className="font-bold text-brand-dark text-base sm:text-lg mb-1">
+                    Get Your Certificate
+                  </h3>
+                  <p className="text-secondary text-sm sm:text-base">
+                    Upon successful completion of all modules, check the Certifications tab to download your certificate.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Info Box */}
+            <div className="mt-8 p-4 sm:p-6 bg-blue-50 border-2 border-blue-200 rounded-lg">
+              <p className="text-sm sm:text-base text-blue-900">
+                <span className="font-bold">💡 Tip:</span> Keep an eye on your email for important notifications from us and your tutor.
+              </p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="border-t-2 border-gray-200 p-6 sm:p-8 bg-gray-50 flex flex-col sm:flex-row gap-3 justify-end rounded-b-2xl">
+            <button
+              onClick={onClose}
+              className="w-full sm:w-auto px-6 py-3 bg-white border-2 border-gray-300 text-brand-dark font-bold rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              Close
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full sm:w-auto px-6 py-3 bg-brand-gold text-white font-bold rounded-lg hover:bg-brand-yellow transition-colors"
+            >
+              Go to My Courses
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   )
 }

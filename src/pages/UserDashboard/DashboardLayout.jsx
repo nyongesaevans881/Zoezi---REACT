@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import DashboardSidebar from './DashboardSidebar'
 import TopNav from './components/TopNav'
 import { useAuth } from '../../hooks/useAuth'
+import { IoMdHelpCircle } from 'react-icons/io'
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL
 
@@ -163,9 +164,9 @@ export default function DashboardLayout({ userType, children }) {
           <button
             onClick={openHelp}
             aria-label="Open help"
-            className="fixed -right-4 top-1/2 z-40 transform -rotate-90 -translate-y-1/2 bg-brand-gold text-primary-dark font-semibold px-4 py-1 shadow-lg hover:opacity-95 cursor-pointer"
+            className="fixed flex items-center gap-2 -right-7 top-1/2 z-40 transform -rotate-90 -translate-y-1/2 bg-brand-gold text-primary-dark font-semibold px-4 py-1 shadow-lg hover:opacity-95 cursor-pointer"
           >
-            ?Help
+            Help <IoMdHelpCircle />
           </button>
 
           {/* Help Modal */}
@@ -183,12 +184,12 @@ export default function DashboardLayout({ userType, children }) {
                 className="relative z-50 w-full max-w-3xl sm:max-w-2xl mx-4 bg-white rounded-xl shadow-2xl overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center justify-between p-5 bg-brand-gold/10 border-b border-brand-gold/20">
+                <div className="flex items-center justify-between p-5 bg-brand-gold/10 border-b border-gray-300">
                   <div>
-                    <h3 className="text-xl font-semibold text-primary-dark">How to enroll — Quick Help</h3>
+                    <h3 className="text-xl font-semibold text-brand-gold uppercase bold">How to enroll — Quick Help</h3>
                     <p className="text-sm text-primary-dark/80">Step-by-step guide to enroll and access your course</p>
                   </div>
-                  <button onClick={closeHelp} aria-label="Close" className="text-gray-600 hover:text-gray-900 p-2 rounded-md">
+                  <button onClick={closeHelp} aria-label="Close" className="text-gray-600 hover:text-gray-900 p-2 rounded-md cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>

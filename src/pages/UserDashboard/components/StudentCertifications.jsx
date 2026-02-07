@@ -42,239 +42,54 @@ const StudentCertifications = ({ userData }) => {
 
   const downloadCertificate = async (course) => {
     try {
-      // Load html2pdf dynamically
-      const html2pdf = (await import('html2pdf.js')).default
+      // Load pdf-lib dynamically
+      const { PDFDocument, rgb } = await import('pdf-lib')
 
-      // Generate certificate content
-      const certificateHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Certificate of Completion</title>
-          <style>
-            * { margin: 0; padding: 0; }
-            body { font-family: 'Georgia', serif; }
-            .certificate-container {
-              width: 210mm;
-              height: 297mm;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
-            }
-            .certificate {
-              width: 190mm;
-              height: 277mm;
-              background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
-              border: 3px solid #d4a644;
-              padding: 30mm;
-              box-sizing: border-box;
-              position: relative;
-              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-              display: flex;
-              flex-direction: column;
-              justify-content: space-between;
-            }
+      // Template PDF URL - Replace this with your actual certificate template PDF URL
+      const CERTIFICATE_TEMPLATE_URL = '/NZI-CERT.pdf'
 
-            /* Decorative corners */
-            .corner {
-              position: absolute;
-              width: 20mm;
-              height: 20mm;
-              border: 2px solid #d4a644;
-            }
-            .corner-tl { top: 10mm; left: 10mm; border-right: none; border-bottom: none; }
-            .corner-tr { top: 10mm; right: 10mm; border-left: none; border-bottom: none; }
-            .corner-bl { bottom: 10mm; left: 10mm; border-right: none; border-top: none; }
-            .corner-br { bottom: 10mm; right: 10mm; border-left: none; border-top: none; }
+      // Fetch the existing certificate template
+      const existingPdfBytes = await fetch(CERTIFICATE_TEMPLATE_URL).then(res => res.arrayBuffer())
 
-            .header {
-              text-align: center;
-              margin-bottom: 2mm;
-            }
-            .logo {
-              font-size: 24pt;
-              margin-bottom: 2mm;
-            }
-            .institute-name {
-              font-size: 18pt;
-              font-weight: bold;
-              color: #2b2520;
-              margin-bottom: 3mm;
-            }
-            .cert-title {
-              font-size: 36pt;
-              font-weight: bold;
-              color: #d4a644;
-              margin: 5mm 0;
-              text-transform: uppercase;
-              letter-spacing: 2px;
-            }
-            .cert-subtitle {
-              font-size: 14pt;
-              color: #666;
-              font-style: italic;
-              margin-bottom: 5mm;
-            }
-            .content {
-              text-align: center;
-              flex-grow: 1;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-            }
-            .presented-text {
-              font-size: 12pt;
-              color: #333;
-              margin-bottom: 4mm;
-            }
-            .student-name {
-              font-size: 28pt;
-              font-weight: bold;
-              color: #2b2520;
-              margin: 8mm 0;
-              text-decoration: underline;
-              text-transform: capitalize;
-              text-decoration-color: #d4a644;
-              text-underline-offset: 3mm;
-            }
-            .achievement-text {
-              font-size: 12pt;
-              color: #333;
-              margin: 8mm 0;
-              line-height: 1.6;
-            }
-            .course-name {
-              font-size: 16pt;
-              font-weight: bold;
-              color: #d4a644;
-              margin: 5mm 0;
-            }
-            .grades-info {
-              font-size: 11pt;
-              color: #555;
-              margin: 5mm 0;
-            }
-            .date-gpa {
-              display: flex;
-              justify-content: space-around;
-              margin-top: 15mm;
-              font-size: 11pt;
-              color: #666;
-            }
-            .date-gpa-item {
-              text-align: center;
-            }
-            .date-gpa-label {
-              font-size: 10pt;
-              color: #999;
-              margin-bottom: 2mm;
-            }
-            .date-gpa-value {
-              font-size: 14pt;
-              font-weight: bold;
-              color: #2b2520;
-            }
+      // Load the PDF
+      const pdfDoc = await PDFDocument.load(existingPdfBytes)
 
-            .footer {
-              text-align: center;
-              margin-top: 15mm;
-              border-top: 1px solid #d4a644;
-              padding-top: 8mm;
-              background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
-            }
-            .signature-line {
-              display: inline-block;
-              width: 60mm;
-              border-top: 2px solid #333;
-              margin: 0 5mm;
-              text-align: center;
-            }
-            .signature-text {
-              font-size: 10pt;
-              color: #000;
-              margin-top: 2mm;
-            }
-            .certificate-code {
-              font-size: 9pt;
-              color: #000;
-              margin-top: 5mm;
-              letter-spacing: 1px;
-            }
+      // Get the first page
+      const pages = pdfDoc.getPages()
+      const firstPage = pages[0]
 
-            @media print {
-              body { margin: 0; padding: 0; }
-              .certificate-container { background: white; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="certificate-container">
-            <div class="certificate">
-              <div class="corner corner-tl"></div>
-              <div class="corner corner-tr"></div>
-              <div class="corner corner-bl"></div>
-              <div class="corner corner-br"></div>
+      // Get page dimensions (landscape)
+      const { width, height } = firstPage.getSize()
 
-              <div class="header">
-                <div class="logo">🎓</div>
-                <div class="institute-name">ZOEZI SCHOOL</div>
-              </div>
+      // Student name
+      const studentName = `${userData?.firstName} ${userData?.lastName}`
 
-              <div class="content">
-                <div class="cert-title">Certificate of Achievement</div>
-                <div class="cert-subtitle">This certifies that</div>
-                
-                <div class="student-name">${userData?.firstName} ${userData?.lastName}</div>
-                
-                <div class="achievement-text">
-                  has successfully completed the course
-                </div>
-                
-                <div class="course-name">${course.name}</div>
-                
-                <div class="grades-info">
-                  Grade: <strong>${course.finalGrade || 'Outstanding'}</strong>
-                </div>
+      // Draw text in the center of the page
+      // Landscape: width is larger, so center horizontally and position vertically in middle
+      firstPage.drawText(studentName, {
+        x: width / 2 - (studentName.length * 7.5), // Center horizontally (rough estimate, adjust as needed)
+        y: height / 2 + (studentName.length * 2), // Center vertically
+        size: 28,
+        color: rgb(0.17, 0.15, 0.13), // Dark brown color (43, 37, 32 converted to 0-1 range)
+        font: await pdfDoc.embedFont('Helvetica-Bold') // Use embedded font
+      })
 
-                <div class="date-gpa">
-                  <div class="date-gpa-item">
-                    <div class="date-gpa-label">GPA</div>
-                    <div class="date-gpa-value">${course.gpa.toFixed(1) || 'N/A'}</div>
-                  </div>
-                  <div class="date-gpa-item">
-                    <div class="date-gpa-label">Date of Completion</div>
-                    <div class="date-gpa-value">${new Date(course.certificationDate).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </body>
-        </html>
-      `
+      // Save the PDF
+      const pdfBytes = await pdfDoc.save()
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${userData?.firstName}_${course.name}_Certificate.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
 
-      const element = document.createElement('div')
-      element.innerHTML = certificateHtml
-
-      const opt = {
-        margin: 0,
-        filename: `${userData?.firstName}_${course.name}_Certificate.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, allowTaint: true, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }
-
-      html2pdf().set(opt).from(element).save()
       toast.success('Certificate downloaded successfully!')
     } catch (err) {
       console.error('Certificate download error:', err)
-      toast.error('Failed to generate certificate. Please try again.')
+      toast.error('Failed to download certificate. Please try again.')
     }
   }
 
@@ -458,7 +273,7 @@ const StudentCertifications = ({ userData }) => {
                 {isCertified && (
                   <button
                     onClick={() => downloadCertificate(course)}
-                    className="w-full bg-gradient-to-r from-primary-gold to-accent-orange hover:opacity-90 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-md"
+                    className="w-full bg-gradient-to-r from-primary-gold to-accent-orange hover:opacity-90 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-md cursor-pointer"
                   >
                     <FaDownload size={16} />
                     Download Certificate
