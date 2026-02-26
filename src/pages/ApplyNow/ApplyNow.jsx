@@ -751,6 +751,10 @@ export default function ApplyNow() {
                       mandatory sessions, b) done, submitted and passed all tests/assignments/projects/research, c) paid
                       all college fees/dues.
                     </li>
+                    <li>
+                      I consent to the school photographing, recording, and using my image, voice, assignments, and course-related work for educational, promotional, and marketing purposes. This includes use on social media, websites, online platforms, and other official communication channels.
+                      I understand that this may be done without further notice or compensation.
+                    </li>
                   </ol>
                 </div>
 
