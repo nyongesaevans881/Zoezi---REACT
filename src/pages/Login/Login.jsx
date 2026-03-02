@@ -51,7 +51,7 @@ const HelpModal = ({ isOpen, onClose }) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[1000] p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-999999 p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -275,8 +275,8 @@ export default function Login() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="w-full max-w-md border-2 border-gray-200 p-10 rounded">
-          {/* User Type Selection */}akevwjnfksik
+        <div className="w-full max-w-md border-2 border-gray-200 py-10 px-5 rounded">
+          {/* User Type Selection */}
           {!showRegister && (
             <motion.div
               className="flex gap-2 mb-6 justify-center flex-wrap"
