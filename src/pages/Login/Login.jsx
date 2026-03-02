@@ -270,13 +270,13 @@ export default function Login() {
 
       {/* Right Side - Login Form */}
       <motion.div
-        className="w-full lg:w-1/2 min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 lg:py-0 lg:px-8 bg-white"
+        className="w-full lg:w-1/2 min-h-screen max-md:min-h-auto flex items-center justify-center px-4 sm:px-6 py-8 lg:py-0 lg:px-8 bg-white"
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="w-full max-w-md">
-          {/* User Type Selection */}
+        <div className="w-full max-w-md border-2 border-gray-200 p-10 rounded">
+          {/* User Type Selection */}akevwjnfksik
           {!showRegister && (
             <motion.div
               className="flex gap-2 mb-6 justify-center flex-wrap"
