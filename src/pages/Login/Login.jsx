@@ -102,8 +102,23 @@ export default function Login() {
   const [userType, setUserType] = useState('student')
   const [showRegister, setShowRegister] = useState(false)
   const [showHelpModal, setShowHelpModal] = useState(false)
+  const formRef = React.useRef(null)
 
   const { login } = useAuth()
+
+  // Check if mobile device
+  const isMobile = () => {
+    return typeof window !== 'undefined' && window.innerWidth < 1024
+  }
+
+  // Scroll to form on mobile
+  const scrollToForm = () => {
+    if (isMobile() && formRef.current) {
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    }
+  }
 
   // Login form
   const [loginId, setLoginId] = useState('')
@@ -247,7 +262,10 @@ export default function Login() {
             <button
               type="button"
               className="bg-gradient-to-r from-purple-400 to-purple-600 text-white px-6 py-2 rounded-lg font-semibold cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 border-none"
-              onClick={() => setShowRegister(true)}
+              onClick={() => {
+                setShowRegister(true)
+                scrollToForm()
+              }}
             >
               Create a new account
             </button>
@@ -264,12 +282,29 @@ export default function Login() {
             <p className="text-gray-100 text-sm">
               If you are an alumni you can use your alumni dashboard to access zoezi soma, no need to create new account. Please Login.
             </p>
+            
+          {/* Mobile Only - Login Button */}
+          <motion.button
+            type="button"
+            className="mt-4 lg:hidden bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-12 py-2 rounded-lg font-semibold cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 border-none uppercase tracking-wide"
+            onClick={() => {
+              setShowRegister(false)
+              setUserType('alumni')
+              scrollToForm()
+            }}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            🔑 Login
+          </motion.button>
           </motion.div>
         </div>
       </motion.div>
 
       {/* Right Side - Login Form */}
       <motion.div
+        ref={formRef}
         className="w-full lg:w-1/2 min-h-screen max-md:min-h-auto flex items-center justify-center px-4 sm:px-6 py-8 lg:py-0 lg:px-8 bg-white"
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
@@ -379,7 +414,10 @@ export default function Login() {
                 <button
                   type="button"
                   className="text-purple-500 font-semibold cursor-pointer hover:text-purple-700 transition-colors duration-300 underline text-sm bg-none border-none"
-                  onClick={() => setShowRegister(true)}
+                  onClick={() => {
+                    setShowRegister(true)
+                    scrollToForm()
+                  }}
                 >
                   Create Student Account
                 </button>
@@ -507,7 +545,10 @@ export default function Login() {
                 <button
                   type="button"
                   className="text-gray-700 font-semibold cursor-pointer hover:text-purple-600 transition-colors duration-300 bg-none border-none"
-                  onClick={() => setShowRegister(false)}
+                  onClick={() => {
+                    setShowRegister(false)
+                    scrollToForm()
+                  }}
                 >
                   ← Back to Login
                 </button>

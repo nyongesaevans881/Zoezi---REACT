@@ -87,6 +87,26 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
     }
   };
 
+  // Helper to fetch and auto-assign curriculum for a course
+  const assignCurriculumToCourse = async (courseId) => {
+    try {
+      // Fetch curriculums and find the one for this course
+      const res = await fetch(`${API_BASE}/curriculums`);
+      const data = await res.json();
+      
+      if (data.status === 'success') {
+        const curriculum = data.data.curriculums?.find(c => String(c.courseId) === String(courseId));
+        if (curriculum) {
+          return curriculum._id;
+        }
+      }
+      return null;
+    } catch (err) {
+      console.error('Fetch curriculum error:', err);
+      return null;
+    }
+  };
+
   const openEnroll = (course) => {
     setSelectedCourse(course)
     
@@ -114,6 +134,9 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
         status: "PAID" // Mark as paid even though it's free
       };
 
+      // Get curriculum for this course
+      const curriculumId = await assignCurriculumToCourse(course._id);
+
       const res = await fetch(`${API_BASE}/users/enroll`, {
         method: 'POST',
         headers: {
@@ -125,6 +148,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
           courseId: course._id,
           paymentData: fakePaymentData,
           userType: userType,
+          curriculumId: curriculumId, // Add curriculum to enrollment
         }),
       });
 
@@ -163,6 +187,9 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
 
   const handlePaymentSuccess = async (paymentData) => {
     try {
+      // Get curriculum for this course
+      const curriculumId = await assignCurriculumToCourse(selectedCourse._id);
+
       const res = await fetch(`${API_BASE}/users/enroll`, {
         method: 'POST',
         headers: {
@@ -174,6 +201,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
           courseId: selectedCourse._id,
           paymentData: paymentData,
           userType: userType,
+          curriculumId: curriculumId, // Add curriculum to enrollment
         }),
       });
 

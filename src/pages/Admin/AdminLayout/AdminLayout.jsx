@@ -24,6 +24,7 @@ export default function AdminLayout({ children }) {
     { label: "Tutors", path: "/admin/tutors", icon: <FaChalkboardTeacher /> },
     { label: "Allotment", path: "/admin/assignments", icon: <FaUserTie /> },
     { label: "Courses", path: "/admin/courses", icon: <FaBook /> },
+    { label: "Curriculum", path: "/admin/curriculum", icon: <ImBooks /> },
     { label: "Alumni", path: "/admin/alumni", icon: <LuGraduationCap /> },
     { label: "Subscriptions", path: "/admin/subscriptions", icon: <FaRegCreditCard /> },
     { label: "Settlements", path: "/admin/settlements", icon: <RiMoneyDollarBoxLine /> },
