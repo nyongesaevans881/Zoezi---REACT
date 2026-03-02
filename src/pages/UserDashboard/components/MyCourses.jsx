@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { FaClock, FaBook, FaTimes, FaRegCheckCircle } from 'react-icons/fa'
+import { useNavigate } from 'react-router-dom'
 import MpesaPayment from '../../../components/MpesaPayment'
 import toast from 'react-hot-toast'
 
 const API_BASE = import.meta.env.VITE_SERVER_URL
 
 export default function MyCourses({ userData, setUserData, refreshUserData }) {
+  const navigate = useNavigate()
   const [available, setAvailable] = useState([])
   const [enrolled, setEnrolled] = useState(() => userData?.courses || [])
   const [loading, setLoading] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successData, setSuccessData] = useState({ isPaid: false, courseName: '' })
   const userType = localStorage.getItem('userType')
 
   useEffect(() => {
@@ -172,6 +175,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
         await fetchAvailableCourses();
       }
 
+      setSuccessData({ isPaid: false, courseName: course.name });
       setShowSuccessModal(true);
 
     } catch (err) {
@@ -226,8 +230,9 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
       }
 
       setShowModal(false);
-      setSelectedCourse(null);
+      setSuccessData({ isPaid: true, courseName: selectedCourse.name });
       setShowSuccessModal(true);
+      setSelectedCourse(null);
 
     } catch (err) {
       console.error('Enrollment error:', err);
@@ -375,12 +380,12 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
                       Enrolled: {new Date(c.enrolledAt || Date.now()).toLocaleDateString()}
                     </p>
 
-                    {/* What Next Button */}
+                    {/* Access Course Content Button */}
                     <button
-                      onClick={() => setShowSuccessModal(true)}
-                      className="w-full mt-4 px-4 py-2 bg-brand-gold text-white font-semibold rounded-lg hover:bg-brand-yellow transition-all duration-300 hover:shadow-lg"
+                      onClick={() => navigate(`/dashboard?tab=course-${c.courseId._id || c.courseId}`)}
+                      className="w-full mt-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg"
                     >
-                      What Next? →
+                      ACCESS COURSE CONTENT
                     </button>
                   </div>
                 </div>
@@ -502,6 +507,8 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
       {showSuccessModal && (
         <EnrollmentSuccessModal
           onClose={() => setShowSuccessModal(false)}
+          isPaid={successData.isPaid}
+          courseName={successData.courseName}
         />
       )}
     </div>
@@ -509,7 +516,7 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
 }
 
 // Success Modal Component
-function EnrollmentSuccessModal({ onClose }) {
+function EnrollmentSuccessModal({ onClose, isPaid, courseName }) {
   useEffect(() => {
     const handleEscapeKey = (e) => {
       if (e.key === 'Escape') {
@@ -539,13 +546,14 @@ function EnrollmentSuccessModal({ onClose }) {
       <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6">
         <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
           {/* Header */}
-          <div className="sticky top-0 bg-gradient-to-r from-primary-gold to-accent-yellow p-6 sm:p-8 flex items-start justify-between border-b-4 border-brand-gold">
+          <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-indigo-600 p-6 sm:p-8 flex items-start justify-between border-b-4 border-purple-700">
             <div className="flex-1">
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">
- Thank you for your payment! 
+                {isPaid ? 'Payment Successful!' : 'Enrollment Successful!'}
               </h2>
-              <p className="text-brand-light text-sm sm:text-base flex items-center gap-2">
-                Your spot in the course is now secured                 <FaRegCheckCircle />
+              <p className="text-purple-100 text-sm sm:text-base flex items-center gap-2">
+                You now have access to course content
+                <FaRegCheckCircle />
               </p>
             </div>
             <button
@@ -559,75 +567,16 @@ function EnrollmentSuccessModal({ onClose }) {
 
           {/* Content */}
           <div className="p-6 sm:p-8">
-            <div className="mb-8">
-              <p className="text-secondary text-center text-base sm:text-lg mb-6 font-semibold">
-                We've successfully received your payment. Here's what happens next:
+            <div className="text-center">
+              <p className="text-secondary text-base sm:text-lg font-semibold mb-2">
+                {isPaid
+                  ? `Your payment for "${courseName}" has been processed successfully.`
+                  : `You have been enrolled in "${courseName}" successfully.`}
               </p>
-            </div>
-
-            {/* Steps */}
-            <div className="space-y-4">
-              <div className="flex gap-4 sm:gap-6">
-                <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-brand-gold text-white font-bold text-lg">
-                  1
-                </div>
-                <div className="flex-1 pt-1">
-                  <h3 className="font-bold text-brand-dark text-base sm:text-lg mb-1">
-                    Tutor Assignment
-                  </h3>
-                  <p className="text-secondary text-sm sm:text-base">
-                    Admin will assign you to a tutor who will take you through the course. This usually happens within 24 hours - (YOU WILL BE NOTIFIED VIA EMAIL).
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 sm:gap-6">
-                <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-brand-gold text-white font-bold text-lg">
-                  2
-                </div>
-                <div className="flex-1 pt-1">
-                  <h3 className="font-bold text-brand-dark text-base sm:text-lg mb-1">
-                    Access Your Portal
-                  </h3>
-                  <p className="text-secondary text-sm sm:text-base">
-                    Upon successful assignment, login into your student portal and check the "My Courses" tab below.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 sm:gap-6">
-                <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-brand-gold text-white font-bold text-lg">
-                  3
-                </div>
-                <div className="flex-1 pt-1">
-                  <h3 className="font-bold text-brand-dark text-base sm:text-lg mb-1">
-                    Find Your Course Content
-                  </h3>
-                  <p className="text-secondary text-sm sm:text-base">
-                    You'll find a new tab with the course name. This is where you'll find all the course content and materials.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 sm:gap-6">
-                <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-brand-gold text-white font-bold text-lg">
-                  4
-                </div>
-                <div className="flex-1 pt-1">
-                  <h3 className="font-bold text-brand-dark text-base sm:text-lg mb-1">
-                    Get Your Certificate
-                  </h3>
-                  <p className="text-secondary text-sm sm:text-base">
-                    Upon successful completion of all modules, check the Certifications tab to download your certificate.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Info Box */}
-            <div className="mt-8 p-4 sm:p-6 bg-blue-50 border-2 border-blue-200 rounded-lg">
-              <p className="text-sm sm:text-base text-blue-900">
-                <span className="font-bold">💡 Tip:</span> Keep an eye on your email for important notifications from us and your tutor.
+              <p className="text-secondary text-sm sm:text-base">
+                {isPaid
+                  ? 'Your spot in the course is now secured. You have instant access to all course content.'
+                  : 'You have instant access to all course content. Check under the MY COURSES tab for a new tab with the course name to view all materials and get started.'}
               </p>
             </div>
           </div>
@@ -642,9 +591,9 @@ function EnrollmentSuccessModal({ onClose }) {
             </button>
             <button
               onClick={onClose}
-              className="w-full sm:w-auto px-6 py-3 bg-brand-gold text-white font-bold rounded-lg hover:bg-brand-yellow transition-colors"
+              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors"
             >
-              Go to My Courses
+              Got it!
             </button>
           </div>
         </div>
