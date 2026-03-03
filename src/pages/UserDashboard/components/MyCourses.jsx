@@ -380,13 +380,23 @@ export default function MyCourses({ userData, setUserData, refreshUserData }) {
                       Enrolled: {new Date(c.enrolledAt || Date.now()).toLocaleDateString()}
                     </p>
 
-                    {/* Access Course Content Button */}
-                    <button
+                    {/* Access Course Content Button - if user type is alumni, url should be /alumni/*/}
+
+                    { localStorage.getItem('userType') === 'alumni' ? (
+                      <button
+                      onClick={() => navigate(`/alumni/dashboard?tab=course-${c.courseId._id || c.courseId}`)}
+                      className="w-full mt-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg"
+                    >
+                      ACCESS COURSE CONTENT
+                    </button>
+                    ) : (
+                      <button
                       onClick={() => navigate(`/student/dashboard?tab=course-${c.courseId._id || c.courseId}`)}
                       className="w-full mt-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg"
                     >
                       ACCESS COURSE CONTENT
                     </button>
+                    )}
                   </div>
                 </div>
               );
