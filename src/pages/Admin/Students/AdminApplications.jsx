@@ -15,6 +15,10 @@ const API_BASE_URL = import.meta.env.VITE_SERVER_URL
 export default function AdminApplications() {
   const [applications, setApplications] = useState([])
   const [filteredApplications, setFilteredApplications] = useState([])
+  const [totalApplications, setTotalApplications] = useState(0)
+  const [pendingCount, setPendingCount] = useState(0)
+  const [acceptedCount, setAcceptedCount] = useState(0)
+  const [rejectedCount, setRejectedCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedApplication, setSelectedApplication] = useState(null)
@@ -23,6 +27,8 @@ export default function AdminApplications() {
   const [rejectModalOpen, setRejectModalOpen] = useState(false)
   const [rejectingAppNumber, setRejectingAppNumber] = useState(null)
   const [rejectReason, setRejectReason] = useState('')
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deletingAppNumber, setDeletingAppNumber] = useState(null)
 
   // Filters
   const [filters, setFilters] = useState({
@@ -45,7 +51,7 @@ export default function AdminApplications() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetch(`${API_BASE_URL}/applications`, {
+      const response = await fetch(`${API_BASE_URL}/applications?limit=10000`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -58,7 +64,15 @@ export default function AdminApplications() {
       }
 
       const data = await response.json()
-      setApplications(data.data?.applications || [])
+      const allApplications = data.data?.applications || []
+      setApplications(allApplications)
+      setTotalApplications(data.data?.pagination?.total || 0)
+      
+      // Calculate stats from all applications
+      setPendingCount(allApplications.filter((a) => a.status === "pending").length)
+      setAcceptedCount(allApplications.filter((a) => a.status === "accepted").length)
+      setRejectedCount(allApplications.filter((a) => a.status === "rejected").length)
+      
       toast.success("Applications fetched successfully")
     } catch (err) {
       console.error("Error fetching applications:", err)
@@ -148,6 +162,32 @@ export default function AdminApplications() {
     setAcceptModalOpen(true)
   }
 
+  const handleDelete = (applicationNumber) => {
+    setDeletingAppNumber(applicationNumber)
+    setDeleteModalOpen(true)
+  }
+
+  const confirmDelete = () => {
+    if (!deletingAppNumber) return
+
+    fetch(`${API_BASE_URL}/applications/${deletingAppNumber}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    })
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message || 'Failed to delete application')
+        fetchApplications()
+        toast.success('Application deleted permanently')
+        setDeleteModalOpen(false)
+        setDeletingAppNumber(null)
+      })
+      .catch((err) => {
+        console.error('Delete error', err)
+        toast.error('Failed to delete application: ' + err.message)
+      })
+  }
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -209,19 +249,19 @@ export default function AdminApplications() {
         <div className="grid grid-cols-4 gap-4">
           <div className="stat-card">
             <span className="stat-label">Total Applications</span>
-            <span className="stat-value">{applications.length}</span>
+            <span className="stat-value">{totalApplications}</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Pending Review</span>
-            <span className="stat-value">{applications.filter((a) => a.status === "pending").length}</span>
+            <span className="stat-value">{pendingCount}</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Accepted</span>
-            <span className="stat-value">{applications.filter((a) => a.status === "accepted").length}</span>
+            <span className="stat-value">{acceptedCount}</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Rejected</span>
-            <span className="stat-value">{applications.filter((a) => a.status === "rejected").length}</span>
+            <span className="stat-value">{rejectedCount}</span>
           </div>
         </div>
 
@@ -297,7 +337,6 @@ export default function AdminApplications() {
               <thead>
                 <tr>
                   <th>Applicant</th>
-                  <th>Contact</th>
                   <th>Course</th>
                   <th>Status</th>
                   <th>Submitted</th>
@@ -309,12 +348,11 @@ export default function AdminApplications() {
                   <tr key={app._id}>
                     <td className="cell-appnumber">
                       {app.applicationNumber}  <br />
-                      {`${app.firstName} ${app.lastName}`}
-                    </td>
-                    <td className="cell-email">
+                      {`${app.firstName} ${app.lastName}`} <br />
                       {app.email} <br />
                       {app.phone}
                     </td>
+
                     <td className="cell-course">{app.course}</td>
                     <td className="cell-status">
                       <span
@@ -326,27 +364,40 @@ export default function AdminApplications() {
                     </td>
                     <td className="cell-date">{formatDate(app.createdAt)}</td>
                     <td className="cell-actions">
-                      <button
-                        className="btn-view"
-                        onClick={() => setSelectedApplication(app)}
-                        title="View Details"
-                      >
-                        <TbScanEye />&nbsp; Details
-                      </button>
-                      <button
-                        className="btn-admit"
-                        onClick={() => handleAdmit(app.applicationNumber)}
-                        title="Admit"
-                      >
-                        <FaRegCheckCircle />&nbsp; Admit
-                      </button>
-                      <button
-                        className="btn-reject"
-                        onClick={() => handleReject(app.applicationNumber)}
-                        title="Reject"
-                      >
-                        <IoMdCloseCircleOutline />&nbsp; Cancel
-                      </button>
+                      <div style={{ display: "flex", gap: "1px", placeItems: "center" }}>
+                        <button
+                          className="btn-view"
+                          onClick={() => setSelectedApplication(app)}
+                          title="View Details"
+                          style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: "#3b82f6" }}
+                        >
+                          <TbScanEye />
+                        </button>
+                        <button
+                          className="btn-admit"
+                          onClick={() => handleAdmit(app.applicationNumber)}
+                          title="Admit Application"
+                          style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: "#10b981" }}
+                        >
+                          <FaRegCheckCircle />
+                        </button>
+                        <button
+                          className="btn-reject"
+                          onClick={() => handleReject(app.applicationNumber)}
+                          title="Reject Application"
+                          style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: "#f59e0b" }}
+                        >
+                          <IoMdCloseCircleOutline />
+                        </button>
+                        <button
+                          className="btn-delete"
+                          onClick={() => handleDelete(app.applicationNumber)}
+                          title="Delete Application"
+                          style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: "#ef4444" }}
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -415,6 +466,69 @@ export default function AdminApplications() {
                   style={{ backgroundColor: '#d32f2f' }}
                 >
                   Confirm Rejection
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            {/* Header */}
+            <div className="p-6 border-b-2" style={{ borderColor: '#ef4444', backgroundColor: '#fef2f2' }}>
+              <h2 className="text-xl font-bold" style={{ color: '#991b1b' }}>
+                🗑️ Delete Application
+              </h2>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              <p className="text-gray-700 font-semibold">
+                Are you sure you want to permanently delete this application?
+              </p>
+              <p className="text-gray-600 text-sm">
+                This action cannot be undone. All application data will be permanently removed from the system.
+              </p>
+
+              {/* Warning Box */}
+              <div style={{
+                backgroundColor: '#fef2f2',
+                border: '2px solid #ef4444',
+                borderRadius: '8px',
+                padding: '12px'
+              }}>
+                <p style={{ color: '#991b1b', fontSize: '14px', margin: 0 }}>
+                  ⚠️ <strong>WARNING:</strong> This cannot be reversed!
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeleteModalOpen(false)
+                    setDeletingAppNumber(null)
+                  }}
+                  className="flex-1 px-4 py-2 rounded-lg font-semibold transition-colors border-2"
+                  style={{
+                    borderColor: '#2b2520',
+                    color: '#2b2520',
+                    backgroundColor: 'transparent'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDelete}
+                  className="flex-1 px-4 py-2 rounded-lg font-semibold text-white transition-colors"
+                  style={{ backgroundColor: '#ef4444' }}
+                >
+                  Delete Permanently
                 </button>
               </div>
             </div>
