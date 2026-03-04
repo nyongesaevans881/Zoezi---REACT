@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import "./ApplyForm.css"
-import SuccessModal from "../../components/SuccessModal"
 import toast from "react-hot-toast"
 
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL
@@ -786,7 +785,82 @@ export default function ApplyNow() {
         </div>
       </div>
 
-      {showSuccess && <SuccessModal onClose={() => setShowSuccess(false)} />}
+      {showSuccess && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setShowSuccess(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            style={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              padding: "3rem",
+              textAlign: "center",
+              maxWidth: "500px",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
+              cursor: "default",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: "80px",
+                height: "80px",
+                borderRadius: "50%",
+                backgroundColor: "#4caf50",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 1.5rem",
+                fontSize: "3rem",
+              }}
+            >
+              ✓
+            </div>
+            <h2 style={{ color: "#2b2520", marginBottom: "1rem", fontSize: "1.8rem" }}>
+              Application Submitted Successfully!
+            </h2>
+            <p style={{ color: "#555", marginBottom: "2rem", lineHeight: "1.6", fontSize: "1.05rem" }}>
+              Thank you for your application to Nairobi Zoezi Institute. Our team will review your application and get back to you as soon as possible.
+            </p>
+            <button
+              onClick={() => setShowSuccess(false)}
+              style={{
+                backgroundColor: "#4caf50",
+                color: "white",
+                border: "none",
+                padding: "0.75rem 2rem",
+                borderRadius: "6px",
+                fontSize: "1rem",
+                cursor: "pointer",
+                fontWeight: "600",
+                transition: "background-color 0.3s ease",
+              }}
+              onMouseEnter={(e) => (e.target.style.backgroundColor = "#45a049")}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = "#4caf50")}
+            >
+              Close
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
     </>
   )
 }
